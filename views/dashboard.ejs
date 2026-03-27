@@ -338,6 +338,24 @@
     </div>
 
     <script>document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);</script>
+
+    <!-- Preview FAB (mobile) -->
+    <button class="preview-fab" onclick="openPreviewModal()" title="معاينة الصفحة">
+        <i class="fas fa-eye"></i>
+    </button>
+
+    <!-- Preview Modal (mobile) -->
+    <div class="modal-overlay" id="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-modal-header">
+                <h3><i class="fas fa-mobile-alt"></i> معاينة صفحتك</h3>
+                <button onclick="closeModal('preview-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-modal-frame">
+                <iframe src="/<%= merchant.username %>" id="preview-modal-iframe"></iframe>
+            </div>
+        </div>
+    </div>
     <script src="/js/dashboard.js"></script>
 </body>
 </html>

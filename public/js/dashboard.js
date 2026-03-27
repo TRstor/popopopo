@@ -13,6 +13,14 @@ function closeSidebar() {
     document.body.style.overflow = '';
 }
 
+// Preview modal (mobile)
+function openPreviewModal() {
+    const modal = document.getElementById('preview-modal');
+    const iframe = document.getElementById('preview-modal-iframe');
+    iframe.src = iframe.src; // refresh
+    modal.classList.add('show');
+}
+
 // Show settings section
 function showSettings() {
     document.getElementById('links-section').classList.add('hidden');
