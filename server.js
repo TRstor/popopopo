@@ -91,12 +91,20 @@ db.exec(`
         url TEXT NOT NULL,
         icon TEXT DEFAULT 'fas fa-link',
         color TEXT DEFAULT '#8B5CF6',
+        size TEXT DEFAULT 'full',
         sort_order INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
     );
 `);
+
+// Migration: add size column if not exists
+try {
+    db.prepare("SELECT size FROM links LIMIT 1").get();
+} catch (e) {
+    db.exec("ALTER TABLE links ADD COLUMN size TEXT DEFAULT 'full'");
+}
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

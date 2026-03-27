@@ -82,16 +82,18 @@
         }
 
         .links-container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
             gap: 12px;
         }
 
         .profile-link {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 14px;
-            padding: 16px 20px;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 12px;
             border-radius: 16px;
             text-decoration: none;
             color: #fff;
@@ -100,6 +102,31 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            text-align: center;
+        }
+
+        /* Size classes */
+        .profile-link.size-full {
+            grid-column: span 6;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 14px;
+            padding: 16px 20px;
+        }
+
+        .profile-link.size-half {
+            grid-column: span 3;
+            padding: 18px 12px;
+        }
+
+        .profile-link.size-third {
+            grid-column: span 2;
+            padding: 14px 8px;
+            font-size: 13px;
+        }
+
+        .profile-link.size-third i {
+            font-size: 20px;
         }
 
         .profile-link::before {
@@ -172,7 +199,7 @@
 
         <div class="links-container">
             <% links.filter(l => l.is_active).forEach(link => { %>
-                <a href="<%= link.url %>" class="profile-link" target="_blank" rel="noopener noreferrer" style="background: <%= link.color %>">
+                <a href="<%= link.url %>" class="profile-link size-<%= link.size || 'full' %>" target="_blank" rel="noopener noreferrer" style="background: <%= link.color %>">
                     <i class="<%= link.icon %>"></i>
                     <span><%= link.title %></span>
                 </a>

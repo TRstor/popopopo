@@ -44,6 +44,12 @@ function openEditModal(link) {
         opt.classList.toggle('selected', opt.dataset.icon === link.icon);
     });
 
+    // Set size radio
+    const sizeVal = link.size || 'full';
+    document.querySelectorAll('#edit-size-picker input[name="edit-size"]').forEach(radio => {
+        radio.checked = (radio.value === sizeVal);
+    });
+
     document.getElementById('edit-modal').classList.add('show');
 }
 
@@ -67,11 +73,13 @@ document.getElementById('edit-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('edit-id').value;
+    const sizeRadio = document.querySelector('#edit-size-picker input[name="edit-size"]:checked');
     const data = {
         title: document.getElementById('edit-title').value,
         url: document.getElementById('edit-url').value,
         icon: document.getElementById('edit-selected-icon').value,
-        color: document.getElementById('edit-color').value
+        color: document.getElementById('edit-color').value,
+        size: sizeRadio ? sizeRadio.value : 'full'
     };
 
     const res = await fetch(`/api/links/update/${id}`, {

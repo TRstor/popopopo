@@ -60,15 +60,18 @@ router.post('/settings', upload.single('profile_image'), (req, res) => {
 
 // Add new link
 router.post('/links/add', (req, res) => {
-    const { title, url, icon, color } = req.body;
+    const { title, url, icon, color, size } = req.body;
     const userId = req.session.user.id;
+
+    const allowedSizes = ['full', 'half', 'third'];
+    const linkSize = allowedSizes.includes(size) ? size : 'full';
 
     // Get max sort_order
     const max = db.prepare('SELECT COALESCE(MAX(sort_order), 0) as max_order FROM links WHERE merchant_id = ?').get(userId);
 
     db.prepare(
-        'INSERT INTO links (merchant_id, title, url, icon, color, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(userId, title, url, icon || 'fas fa-link', color || '#8B5CF6', max.max_order + 1);
+        'INSERT INTO links (merchant_id, title, url, icon, color, size, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(userId, title, url, icon || 'fas fa-link', color || '#8B5CF6', linkSize, max.max_order + 1);
 
     res.redirect('/dashboard');
 });

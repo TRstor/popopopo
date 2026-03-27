@@ -34,11 +34,14 @@ router.post('/links/reorder', requireAuth, (req, res) => {
 
 // Update link inline
 router.post('/links/update/:id', requireAuth, (req, res) => {
-    const { title, url, icon, color } = req.body;
+    const { title, url, icon, color, size } = req.body;
     const userId = req.session.user.id;
 
-    db.prepare('UPDATE links SET title = ?, url = ?, icon = ?, color = ? WHERE id = ? AND merchant_id = ?')
-        .run(title, url, icon, color, req.params.id, userId);
+    const allowedSizes = ['full', 'half', 'third'];
+    const linkSize = allowedSizes.includes(size) ? size : 'full';
+
+    db.prepare('UPDATE links SET title = ?, url = ?, icon = ?, color = ?, size = ? WHERE id = ? AND merchant_id = ?')
+        .run(title, url, icon, color, linkSize, req.params.id, userId);
 
     res.json({ success: true });
 });

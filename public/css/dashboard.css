@@ -251,6 +251,58 @@
 .btn-icon.edit:hover { color: #8B5CF6; }
 .btn-icon.delete:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
+/* ========== Link Size Badge ========== */
+.link-size-badge {
+    background: #2a2a4a;
+    color: #8B5CF6;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* ========== Size Picker ========== */
+.size-picker {
+    display: flex;
+    gap: 10px;
+}
+
+.size-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.size-option input[type="radio"] {
+    display: none;
+}
+
+.size-preview {
+    padding: 12px 8px;
+    border: 2px solid #2a2a4a;
+    border-radius: 10px;
+    background: #12122a;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    transition: all 0.2s;
+}
+
+.size-preview span {
+    display: block;
+}
+
+.size-option input[type="radio"]:checked + .size-preview {
+    border-color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+.size-option:hover .size-preview {
+    border-color: #555;
+}
+
 /* ========== Empty State ========== */
 .empty-state {
     text-align: center;
