@@ -75,7 +75,7 @@
                                 <div class="drag-handle">
                                     <i class="fas fa-grip-vertical"></i>
                                 </div>
-                                <div class="link-icon" style="background: <%= link.color %>">
+                                <div class="link-icon" data-bg="<%= link.color %>">
                                     <i class="<%= link.icon %>"></i>
                                 </div>
                                 <div class="link-info">
@@ -89,7 +89,7 @@
                                             <i class="fas fa-<%= link.is_active ? 'eye' : 'eye-slash' %>"></i>
                                         </button>
                                     </form>
-                                    <button class="btn-icon edit" onclick='openEditModal(<%= JSON.stringify(link) %>)' title="تعديل">
+                                    <button class="btn-icon edit" data-link="<%= encodeURIComponent(JSON.stringify(link)) %>" onclick="openEditModal(JSON.parse(decodeURIComponent(this.dataset.link)))" title="تعديل">
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="/dashboard/links/delete/<%= link.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
@@ -335,6 +335,7 @@
         </div>
     </div>
 
+    <script>document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);</script>
     <script src="/js/dashboard.js"></script>
 </body>
 </html>

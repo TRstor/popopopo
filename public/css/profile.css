@@ -1,0 +1,202 @@
+/* ===== Profile Page Base Styles ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text);
+}
+
+.profile-page {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px 0;
+}
+
+/* ===== Logo ===== */
+.brand-top {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.brand-top span {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+.brand-top .brand-highlight {
+    color: var(--text);
+}
+
+/* ===== Profile Card ===== */
+.profile-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 30px 20px 25px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    overflow: hidden;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #fff;
+}
+
+.profile-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.profile-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    padding: 4px 12px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ===== Links Grid ===== */
+.links-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.profile-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 10px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--btn-text);
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: var(--btn-shadow);
+}
+
+.profile-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.profile-link:active {
+    transform: scale(0.97);
+}
+
+.profile-link::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    transition: left 0.5s ease;
+}
+
+.profile-link:hover::before { left: 100%; }
+
+.profile-link i { font-size: 22px; }
+
+/* Size classes */
+.profile-link.size-full {
+    grid-column: span 6;
+    flex-direction: row;
+    gap: 12px;
+    padding: 17px 20px;
+    font-size: 16px;
+    border-radius: 14px;
+}
+
+.profile-link.size-half {
+    grid-column: span 3;
+    padding: 18px 10px;
+    font-size: 14px;
+}
+
+.profile-link.size-third {
+    grid-column: span 2;
+    padding: 14px 6px;
+    font-size: 12px;
+}
+
+.profile-link.size-third i {
+    font-size: 20px;
+}
+
+/* ===== Footer ===== */
+.powered-by {
+    text-align: center;
+    margin-top: 30px;
+    opacity: 0.5;
+}
+
+.powered-by a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-card { animation: fadeInUp 0.5s ease-out; }
+.profile-link { animation: fadeInUp 0.5s ease-out both; }
+
+@media (max-width: 480px) {
+    body { padding: 10px; }
+    .profile-page { padding: 10px 0; }
+    .profile-card { padding: 25px 15px 20px; }
+}

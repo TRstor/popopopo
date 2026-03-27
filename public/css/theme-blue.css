@@ -1,0 +1,12 @@
+/* Theme: Blue */
+:root {
+    --bg: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+    --card-bg: rgba(255,255,255,0.85);
+    --text: #1e3a5f;
+    --text-muted: #4a6d8c;
+    --border: rgba(147,197,253,0.4);
+    --shadow: 0 2px 12px rgba(30,58,95,0.08);
+    --btn-text: #fff;
+    --btn-shadow: 0 4px 15px rgba(30,58,95,0.15);
+    --accent: #3b82f6;
+}
