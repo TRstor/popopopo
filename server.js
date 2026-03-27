@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
@@ -9,6 +10,12 @@ const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Ensure directories exist
+['data', 'uploads'].forEach(dir => {
+    const p = path.join(__dirname, dir);
+    if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+});
 
 // Middleware
 app.use(express.json());
