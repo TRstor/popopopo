@@ -303,6 +303,99 @@
     border-color: #555;
 }
 
+/* ========== Theme Picker ========== */
+.theme-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.theme-option {
+    cursor: pointer;
+}
+
+.theme-option input[type="radio"] {
+    display: none;
+}
+
+.theme-preview {
+    padding: 14px 8px 10px;
+    border-radius: 12px;
+    border: 2px solid #2a2a4a;
+    text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.theme-preview .tp-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #555;
+}
+
+.theme-preview .tp-line {
+    width: 80%;
+    height: 6px;
+    border-radius: 3px;
+    background: #555;
+}
+
+.theme-preview .tp-line.short {
+    width: 50%;
+}
+
+.theme-preview span {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    color: #888;
+}
+
+/* Theme Dark */
+.theme-dark {
+    background: #0a0a0a;
+}
+.theme-dark .tp-circle { background: #8B5CF6; }
+.theme-dark .tp-line { background: #333; }
+.theme-dark span { color: #888; }
+
+/* Theme Light */
+.theme-light {
+    background: #f5f5f7;
+}
+.theme-light .tp-circle { background: #8B5CF6; }
+.theme-light .tp-line { background: #ddd; }
+.theme-light span { color: #666; }
+
+/* Theme Blue */
+.theme-blue {
+    background: linear-gradient(135deg, #dbeafe, #93c5fd);
+}
+.theme-blue .tp-circle { background: #3b82f6; }
+.theme-blue .tp-line { background: rgba(255,255,255,0.5); }
+.theme-blue span { color: #1e3a5f; }
+
+/* Theme Pink */
+.theme-pink {
+    background: linear-gradient(135deg, #fce7f3, #f9a8d4);
+}
+.theme-pink .tp-circle { background: #ec4899; }
+.theme-pink .tp-line { background: rgba(255,255,255,0.5); }
+.theme-pink span { color: #831843; }
+
+.theme-option input[type="radio"]:checked + .theme-preview {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+.theme-option:hover .theme-preview {
+    border-color: #555;
+}
+
 /* ========== Empty State ========== */
 .empty-state {
     text-align: center;

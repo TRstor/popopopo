@@ -142,6 +142,48 @@
                         <input type="color" name="theme_color" value="<%= merchant.theme_color || '#8B5CF6' %>">
                     </div>
 
+                    <div class="form-group">
+                        <label>ستايل الصفحة</label>
+                        <div class="theme-picker">
+                            <label class="theme-option">
+                                <input type="radio" name="theme_style" value="dark" <%= (merchant.theme_style || 'dark') === 'dark' ? 'checked' : '' %>>
+                                <div class="theme-preview theme-dark">
+                                    <div class="tp-circle"></div>
+                                    <div class="tp-line"></div>
+                                    <div class="tp-line short"></div>
+                                    <span>داكن</span>
+                                </div>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme_style" value="light" <%= merchant.theme_style === 'light' ? 'checked' : '' %>>
+                                <div class="theme-preview theme-light">
+                                    <div class="tp-circle"></div>
+                                    <div class="tp-line"></div>
+                                    <div class="tp-line short"></div>
+                                    <span>فاتح</span>
+                                </div>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme_style" value="blue" <%= merchant.theme_style === 'blue' ? 'checked' : '' %>>
+                                <div class="theme-preview theme-blue">
+                                    <div class="tp-circle"></div>
+                                    <div class="tp-line"></div>
+                                    <div class="tp-line short"></div>
+                                    <span>أزرق</span>
+                                </div>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme_style" value="pink" <%= merchant.theme_style === 'pink' ? 'checked' : '' %>>
+                                <div class="theme-preview theme-pink">
+                                    <div class="tp-circle"></div>
+                                    <div class="tp-line"></div>
+                                    <div class="tp-line short"></div>
+                                    <span>وردي</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> حفظ التغييرات
                     </button>

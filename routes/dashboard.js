@@ -38,11 +38,14 @@ router.get('/', (req, res) => {
 
 // Update profile settings
 router.post('/settings', upload.single('profile_image'), (req, res) => {
-    const { store_name, store_desc, theme_color } = req.body;
+    const { store_name, store_desc, theme_color, theme_style } = req.body;
     const userId = req.session.user.id;
 
-    let query = 'UPDATE merchants SET store_name = ?, store_desc = ?, theme_color = ?';
-    let params = [store_name, store_desc || '', theme_color || '#8B5CF6'];
+    const allowedThemes = ['dark', 'light', 'blue', 'pink'];
+    const style = allowedThemes.includes(theme_style) ? theme_style : 'dark';
+
+    let query = 'UPDATE merchants SET store_name = ?, store_desc = ?, theme_color = ?, theme_style = ?';
+    let params = [store_name, store_desc || '', theme_color || '#8B5CF6', style];
 
     if (req.file) {
         query += ', profile_image = ?';

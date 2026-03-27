@@ -81,6 +81,7 @@ db.exec(`
         store_desc TEXT DEFAULT '',
         profile_image TEXT DEFAULT '',
         theme_color TEXT DEFAULT '#8B5CF6',
+        theme_style TEXT DEFAULT 'dark',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -104,6 +105,13 @@ try {
     db.prepare("SELECT size FROM links LIMIT 1").get();
 } catch (e) {
     db.exec("ALTER TABLE links ADD COLUMN size TEXT DEFAULT 'full'");
+}
+
+// Migration: add theme_style column if not exists
+try {
+    db.prepare("SELECT theme_style FROM merchants LIMIT 1").get();
+} catch (e) {
+    db.exec("ALTER TABLE merchants ADD COLUMN theme_style TEXT DEFAULT 'dark'");
 }
 
 app.listen(PORT, () => {
