@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - TR Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-link"></i> TR Store
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item active">
+                    <i class="fas fa-th-large"></i> الروابط
+                </a>
+                <a href="#settings-section" class="nav-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i> الإعدادات
+                </a>
+                <a href="/<%= merchant.username %>" target="_blank" class="nav-item">
+                    <i class="fas fa-external-link-alt"></i> معاينة الصفحة
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/logout" class="nav-item logout">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="topbar">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>مرحباً، <%= merchant.store_name %></h2>
+                <div class="profile-url">
+                    <i class="fas fa-link"></i>
+                    <span id="profile-url"><%= profileUrl %></span>
+                    <button onclick="copyUrl()" class="btn-copy" title="نسخ الرابط">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Links Section -->
+            <section class="content-section" id="links-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-th-large"></i> روابطك</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+                        <i class="fas fa-plus"></i> إضافة رابط
+                    </button>
+                </div>
+
+                <div class="links-list" id="links-list">
+                    <% if (links.length === 0) { %>
+                        <div class="empty-state">
+                            <i class="fas fa-link"></i>
+                            <p>لم تضف أي روابط بعد</p>
+                            <button class="btn btn-primary" onclick="openAddModal()">أضف رابطك الأول</button>
+                        </div>
+                    <% } else { %>
+                        <% links.forEach((link, index) => { %>
+                            <div class="link-card" data-id="<%= link.id %>" draggable="true">
+                                <div class="drag-handle">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </div>
+                                <div class="link-icon" style="background: <%= link.color %>">
+                                    <i class="<%= link.icon %>"></i>
+                                </div>
+                                <div class="link-info">
+                                    <strong><%= link.title %></strong>
+                                    <small><%= link.url %></small>
+                                </div>
+                                <div class="link-actions">
+                                    <form method="POST" action="/dashboard/links/toggle/<%= link.id %>" style="display:inline">
+                                        <button type="submit" class="btn-icon <%= link.is_active ? 'active' : 'inactive' %>" title="<%= link.is_active ? 'مفعل' : 'معطل' %>">
+                                            <i class="fas fa-<%= link.is_active ? 'eye' : 'eye-slash' %>"></i>
+                                        </button>
+                                    </form>
+                                    <button class="btn-icon edit" onclick='openEditModal(<%= JSON.stringify(link) %>)' title="تعديل">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <form method="POST" action="/dashboard/links/delete/<%= link.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                        <button type="submit" class="btn-icon delete" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section class="content-section hidden" id="settings-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-cog"></i> إعدادات المتجر</h3>
+                </div>
+
+                <form method="POST" action="/dashboard/settings" enctype="multipart/form-data" class="settings-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>صورة البروفايل</label>
+                            <div class="profile-upload">
+                                <% if (merchant.profile_image) { %>
+                                    <img src="<%= merchant.profile_image %>" alt="Profile" class="current-avatar">
+                                <% } else { %>
+                                    <div class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                <% } %>
+                                <input type="file" name="profile_image" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>اسم المتجر</label>
+                        <input type="text" name="store_name" value="<%= merchant.store_name %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>وصف المتجر</label>
+                        <textarea name="store_desc" rows="3" placeholder="اكتب وصفاً مختصراً لمتجرك"><%= merchant.store_desc || '' %></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>اللون الرئيسي</label>
+                        <input type="color" name="theme_color" value="<%= merchant.theme_color || '#8B5CF6' %>">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ التغييرات
+                    </button>
+                </form>
+            </section>
+
+            <!-- Live Preview -->
+            <section class="preview-panel">
+                <h4><i class="fas fa-mobile-alt"></i> معاينة مباشرة</h4>
+                <div class="preview-frame">
+                    <iframe src="/<%= merchant.username %>" id="preview-iframe"></iframe>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Link Modal -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>إضافة رابط جديد</h3>
+                <button onclick="closeModal('add-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" action="/dashboard/links/add">
+                <div class="form-group">
+                    <label>عنوان الرابط</label>
+                    <input type="text" name="title" placeholder="مثال: واتس آب" required>
+                </div>
+                <div class="form-group">
+                    <label>الرابط (URL)</label>
+                    <input type="url" name="url" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label>الأيقونة</label>
+                    <div class="icon-picker" id="icon-picker">
+                        <input type="hidden" name="icon" id="selected-icon" value="fas fa-link">
+                        <div class="icon-grid">
+                            <button type="button" class="icon-option selected" data-icon="fas fa-link"><i class="fas fa-link"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-whatsapp"><i class="fab fa-whatsapp"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-instagram"><i class="fab fa-instagram"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-tiktok"><i class="fab fa-tiktok"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-telegram-plane"><i class="fab fa-telegram-plane"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-snapchat-ghost"><i class="fab fa-snapchat-ghost"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-x-twitter"><i class="fab fa-x-twitter"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-facebook-f"><i class="fab fa-facebook-f"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-youtube"><i class="fab fa-youtube"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-store"><i class="fas fa-store"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-shopping-cart"><i class="fas fa-shopping-cart"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-globe"><i class="fas fa-globe"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-envelope"><i class="fas fa-envelope"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-phone"><i class="fas fa-phone"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-map-marker-alt"><i class="fas fa-map-marker-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>لون الزر</label>
+                    <input type="color" name="color" value="#8B5CF6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus"></i> إضافة الرابط
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Link Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>تعديل الرابط</h3>
+                <button onclick="closeModal('edit-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label>عنوان الرابط</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-group">
+                    <label>الرابط (URL)</label>
+                    <input type="url" id="edit-url" required>
+                </div>
+                <div class="form-group">
+                    <label>الأيقونة</label>
+                    <div class="icon-picker" id="edit-icon-picker">
+                        <input type="hidden" id="edit-selected-icon">
+                        <div class="icon-grid">
+                            <button type="button" class="icon-option" data-icon="fas fa-link"><i class="fas fa-link"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-whatsapp"><i class="fab fa-whatsapp"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-instagram"><i class="fab fa-instagram"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-tiktok"><i class="fab fa-tiktok"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-telegram-plane"><i class="fab fa-telegram-plane"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-snapchat-ghost"><i class="fab fa-snapchat-ghost"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-x-twitter"><i class="fab fa-x-twitter"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-facebook-f"><i class="fab fa-facebook-f"></i></button>
+                            <button type="button" class="icon-option" data-icon="fab fa-youtube"><i class="fab fa-youtube"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-store"><i class="fas fa-store"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-shopping-cart"><i class="fas fa-shopping-cart"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-globe"><i class="fas fa-globe"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-envelope"><i class="fas fa-envelope"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-phone"><i class="fas fa-phone"></i></button>
+                            <button type="button" class="icon-option" data-icon="fas fa-map-marker-alt"><i class="fas fa-map-marker-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>لون الزر</label>
+                    <input type="color" id="edit-color" value="#8B5CF6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> حفظ التعديلات
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

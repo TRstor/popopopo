@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= merchant.store_name %></title>
+    <meta name="description" content="<%= merchant.store_desc || merchant.store_name %>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --theme: <%= merchant.theme_color || '#8B5CF6' %>;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .profile-page {
+            width: 100%;
+            max-width: 420px;
+            padding: 30px 0;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            border: 3px solid var(--theme);
+            box-shadow: 0 0 25px color-mix(in srgb, var(--theme) 30%, transparent);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--theme), color-mix(in srgb, var(--theme) 60%, #000));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #fff;
+        }
+
+        .profile-name {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #fff, var(--theme));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-desc {
+            font-size: 14px;
+            color: #aaa;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .profile-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-link::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .profile-link:hover::before { left: 100%; }
+        .profile-link:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .profile-link:active { transform: scale(0.98); }
+
+        .profile-link i {
+            font-size: 22px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .powered-by {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        .powered-by a {
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-link {
+            animation: fadeInUp 0.5s ease-out both;
+        }
+
+        <% links.forEach((link, i) => { %>
+        .profile-link:nth-child(<%= i + 1 %>) { animation-delay: <%= i * 0.08 %>s; }
+        <% }) %>
+
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .profile-page { padding: 20px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-page">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <% if (merchant.profile_image) { %>
+                    <img src="<%= merchant.profile_image %>" alt="<%= merchant.store_name %>">
+                <% } else { %>
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-store"></i>
+                    </div>
+                <% } %>
+            </div>
+            <h1 class="profile-name"><%= merchant.store_name %></h1>
+            <% if (merchant.store_desc) { %>
+                <p class="profile-desc"><%= merchant.store_desc %></p>
+            <% } %>
+        </div>
+
+        <div class="links-container">
+            <% links.filter(l => l.is_active).forEach(link => { %>
+                <a href="<%= link.url %>" class="profile-link" target="_blank" rel="noopener noreferrer" style="background: <%= link.color %>">
+                    <i class="<%= link.icon %>"></i>
+                    <span><%= link.title %></span>
+                </a>
+            <% }) %>
+        </div>
+
+        <div class="powered-by">
+            صنع بواسطة <a href="/">TR Store</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,415 @@
+/* ========== Base Reset & Variables ========== */
+:root {
+    --bg-dark: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-surface: #0f3460;
+    --accent-green: #25D366;
+    --accent-orange: #FF8C00;
+    --accent-yellow: #FFFC00;
+    --accent-blue: #0088cc;
+    --accent-purple: #8B5CF6;
+    --accent-pink: #E1306C;
+    --accent-snap: #FFFC00;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --radius-lg: 20px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: var(--text-primary);
+}
+
+/* ========== Container ========== */
+.container {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* ========== Phone Frame ========== */
+.phone-frame {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 30px;
+    border: 3px solid #2a2a4a;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(139, 92, 246, 0.1);
+    position: relative;
+}
+
+/* ========== Header Banner ========== */
+.header-banner {
+    background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+    padding: 15px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: translateX(-30%); }
+    50% { transform: translateX(30%); }
+}
+
+.banner-badges {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.tabby-badge {
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.badge-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+/* ========== Profile Section ========== */
+.profile-section {
+    text-align: center;
+    padding: 25px 20px 15px;
+}
+
+.profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    border: 3px solid var(--accent-purple);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.profile-image:hover {
+    transform: scale(1.05);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.store-name {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.store-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.store-desc-en {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+/* ========== Social Icons ========== */
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.social-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.social-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.social-icon:hover::before {
+    opacity: 1;
+}
+
+.social-icon:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.social-icon.facebook { background: #1877F2; }
+.social-icon.twitter { background: #1DA1F2; }
+.social-icon.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.social-icon.tiktok { background: #000; border: 1px solid #333; }
+
+/* ========== Links Section ========== */
+.links-section {
+    padding: 10px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ========== Link Buttons ========== */
+.link-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white;
+    border-radius: var(--radius-md);
+    padding: 16px 12px;
+    font-weight: 700;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.link-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.link-btn:hover::before {
+    left: 100%;
+}
+
+.link-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.link-btn:active {
+    transform: scale(0.98);
+}
+
+.link-btn i {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.link-btn .btn-subtitle {
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+/* Main Store Button */
+.main-store-btn {
+    background: linear-gradient(135deg, #FF8C00 0%, #11998e 50%, #38ef7d 100%);
+    padding: 20px 12px;
+    font-size: 18px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 20px rgba(17, 153, 142, 0.3);
+}
+
+.main-store-btn i {
+    font-size: 26px;
+    margin-bottom: 6px;
+}
+
+/* Row Layout */
+.links-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.links-row.three-col {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.links-row .link-btn {
+    padding: 14px 8px;
+    font-size: 14px;
+}
+
+.links-row .link-btn i {
+    font-size: 20px;
+}
+
+.links-row.three-col .link-btn {
+    padding: 12px 6px;
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+}
+
+.links-row.three-col .link-btn i {
+    font-size: 18px;
+}
+
+/* WhatsApp Button */
+.whatsapp-btn {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2);
+}
+
+/* TikTok Button */
+.tiktok-btn {
+    background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Telegram Button */
+.telegram-btn {
+    background: linear-gradient(135deg, #0088cc 0%, #229ED9 100%);
+    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.2);
+}
+
+/* Snapchat Button */
+.snapchat-btn {
+    background: linear-gradient(135deg, #FFFC00 0%, #FFD700 100%);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(255, 252, 0, 0.2);
+}
+
+.snapchat-btn .btn-subtitle {
+    color: rgba(0,0,0,0.5);
+}
+
+/* Instagram Button */
+.instagram-btn {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    box-shadow: 0 4px 15px rgba(225, 48, 108, 0.2);
+}
+
+/* ========== Footer ========== */
+.footer {
+    text-align: center;
+    padding: 15px 20px 25px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+}
+
+/* ========== Animations ========== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.main-store-btn {
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.links-row:nth-child(2) {
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.links-row:nth-child(3) {
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 480px) {
+    body {
+        padding: 0;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .phone-frame {
+        border-radius: 0;
+        border: none;
+        min-height: 100vh;
+    }
+}
+
+@media (min-width: 481px) {
+    .phone-frame {
+        margin: 20px auto;
+    }
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 10px;
+}
