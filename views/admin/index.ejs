@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
+            <nav>
+                <a href="/admin" class="active"><i class="fas fa-chart-bar"></i> الرئيسية</a>
+                <a href="/admin/merchants"><i class="fas fa-users"></i> التجار</a>
+                <a href="/admin/tickets"><i class="fas fa-headset"></i> التذاكر</a>
+                <a href="/admin/notifications"><i class="fas fa-bell"></i> الإشعارات</a>
+                <a href="/admin/status"><i class="fas fa-server"></i> حالة الخدمة</a>
+                <a href="/dashboard"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <h1>لوحة الإدارة</h1>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value"><%= stats.totalMerchants %></span>
+                        <span class="stat-label">إجمالي التجار</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6"><i class="fas fa-link"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value"><%= stats.totalLinks %></span>
+                        <span class="stat-label">إجمالي الروابط</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="fas fa-eye"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value"><%= stats.totalViews %></span>
+                        <span class="stat-label">إجمالي المشاهدات</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value"><%= stats.openTickets %></span>
+                        <span class="stat-label">تذاكر مفتوحة</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<a href="<%= link.url %>" 
+   class="profile-link size-<%= link.size || 'full' %> shape-<%= merchant.button_shape || 'rounded' %><%= link.border_style && link.border_style !== 'none' ? ' border-' + link.border_style : '' %>" 
+   target="_blank" rel="noopener noreferrer" 
+   data-bg="<%= link.gradient || link.color %>"
+   <% if (link.gradient) { %>data-gradient="<%= link.gradient %>"<% } %>
+   data-link-id="<%= link.id %>">
+    <% if (link.badge) { %><span class="link-badge"><%= link.badge %></span><% } %>
+    <% if (link.show_icon !== 0) { %><i class="<%= link.icon %>"></i><% } %>
+    <span class="link-content">
+        <% if (link.show_text !== 0) { %><span class="link-title"><%= link.title %></span><% } %>
+        <% if (link.description) { %><small class="link-desc"><%= link.description %></small><% } %>
+    </span>
+    <% if (link.countdown_date) { %><span class="countdown" data-countdown="<%= link.countdown_date %>"></span><% } %>
+</a>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل التجار - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><i class="fas fa-link"></i> Link<span>in1</span></a>
+        <div class="nav-links">
+            <a href="/directory" class="btn btn-outline" style="border-color:#8B5CF6;color:#8B5CF6">دليل التجار</a>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <a href="/dashboard" class="btn btn-primary">لوحة التحكم</a>
+            <% } else { %>
+                <a href="/login" class="btn btn-outline">تسجيل دخول</a>
+                <a href="/register" class="btn btn-primary">إنشاء صفحة</a>
+            <% } %>
+        </div>
+    </nav>
+
+    <div class="directory-page">
+        <div class="directory-header">
+            <h1><i class="fas fa-store"></i> دليل التجار</h1>
+            <p><%= totalMerchants %> تاجر مسجل في المنصة</p>
+            <form class="search-box" method="GET" action="/directory">
+                <input type="text" name="q" placeholder="ابحث عن تاجر..." value="<%= search || '' %>">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+
+        <div class="directory-grid">
+            <% if (merchants.length === 0) { %>
+                <div style="grid-column:1/-1;text-align:center;padding:40px;color:#555">
+                    <i class="fas fa-search" style="font-size:40px;margin-bottom:12px;display:block"></i>
+                    <p>لا توجد نتائج</p>
+                </div>
+            <% } else { %>
+                <% merchants.forEach(m => { %>
+                <a href="/<%= m.username %>" class="merchant-card">
+                    <% if (m.profile_image) { %>
+                        <img src="<%= m.profile_image %>" alt="<%= m.store_name %>">
+                    <% } else { %>
+                        <div class="mc-placeholder"><i class="fas fa-store"></i></div>
+                    <% } %>
+                    <strong>
+                        <% if (m.is_verified) { %><i class="fas fa-check-circle verified-badge"></i><% } %>
+                        <%= m.store_name %>
+                    </strong>
+                    <small>@<%= m.username %></small>
+                </a>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="landing-footer">
+        <div class="footer-links">
+            <a href="/">الرئيسية</a>
+            <a href="/directory">دليل التجار</a>
+        </div>
+        <p>&copy; 2024 Linkin1 - جميع الحقوق محفوظة</p>
+    </div>
+</body>
+</html>

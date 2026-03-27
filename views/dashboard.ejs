@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - TR Store</title>
+    <title>لوحة التحكم - Linkin1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -12,24 +12,40 @@
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="dashboard-layout">
         <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <span><i class="fas fa-link"></i> TR Store</span>
+                <span><i class="fas fa-link"></i> Linkin1</span>
                 <button class="sidebar-close" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
             </div>
             <nav class="sidebar-nav">
-                <a href="/dashboard" class="nav-item active">
+                <a href="/dashboard" class="nav-item active" data-section="links-section" onclick="showSection('links-section', this)">
                     <i class="fas fa-th-large"></i> الروابط
                 </a>
-                <a href="#settings-section" class="nav-item" onclick="showSettings()">
+                <a href="#" class="nav-item" data-section="sections-section" onclick="showSection('sections-section', this)">
+                    <i class="fas fa-layer-group"></i> الأقسام
+                </a>
+                <a href="#" class="nav-item" data-section="settings-section" onclick="showSection('settings-section', this)">
                     <i class="fas fa-cog"></i> الإعدادات
                 </a>
+                <a href="#" class="nav-item" data-section="tickets-section" onclick="showSection('tickets-section', this)">
+                    <i class="fas fa-headset"></i> الدعم الفني
+                </a>
+                <% if (notifications && notifications.length > 0) { %>
+                <a href="#" class="nav-item" data-section="notif-section" onclick="showSection('notif-section', this)">
+                    <i class="fas fa-bell"></i> الإشعارات
+                    <span class="nav-badge"><%= notifications.length %></span>
+                </a>
+                <% } %>
                 <a href="/<%= merchant.username %>" target="_blank" class="nav-item">
                     <i class="fas fa-external-link-alt"></i> معاينة الصفحة
                 </a>
+                <% if (merchant.is_admin) { %>
+                <a href="/admin" class="nav-item admin-link">
+                    <i class="fas fa-shield-alt"></i> لوحة الإدارة
+                </a>
+                <% } %>
             </nav>
             <div class="sidebar-footer">
                 <a href="/logout" class="nav-item logout">
@@ -38,14 +54,16 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Bar -->
             <div class="topbar">
                 <button class="sidebar-toggle" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
                 <h2>مرحباً، <%= merchant.store_name %></h2>
+                <div class="topbar-stats">
+                    <span class="stat-chip"><i class="fas fa-eye"></i> <%= viewCount %></span>
+                    <span class="stat-chip"><i class="fas fa-link"></i> <%= links.length %></span>
+                </div>
                 <div class="profile-url">
                     <i class="fas fa-link"></i>
                     <span id="profile-url"><%= profileUrl %></span>
@@ -55,24 +73,40 @@
                 </div>
             </div>
 
+            <% if (typeof msg !== 'undefined' || (typeof locals !== 'undefined')) { %>
+            <% const qmsg = typeof locals !== 'undefined' && locals.msg ? locals.msg : ''; %>
+            <% } %>
+
             <!-- Links Section -->
             <section class="content-section" id="links-section">
                 <div class="section-header">
                     <h3><i class="fas fa-th-large"></i> روابطك</h3>
-                    <button class="btn btn-primary btn-sm" onclick="openAddModal()">
-                        <i class="fas fa-plus"></i> إضافة رابط
-                    </button>
+                    <div class="section-actions">
+                        <div class="filter-group">
+                            <a href="/dashboard?filter=all" class="filter-btn <%= filter === 'all' ? 'active' : '' %>">الكل</a>
+                            <a href="/dashboard?filter=active" class="filter-btn <%= filter === 'active' ? 'active' : '' %>">نشط</a>
+                            <a href="/dashboard?filter=inactive" class="filter-btn <%= filter === 'inactive' ? 'active' : '' %>">معطل</a>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+                            <i class="fas fa-plus"></i> إضافة رابط
+                        </button>
+                    </div>
                 </div>
 
                 <div class="links-list" id="links-list">
-                    <% if (links.length === 0) { %>
+                    <% 
+                    let filteredLinks = links;
+                    if (filter === 'active') filteredLinks = links.filter(l => l.is_active);
+                    else if (filter === 'inactive') filteredLinks = links.filter(l => !l.is_active);
+                    %>
+                    <% if (filteredLinks.length === 0) { %>
                         <div class="empty-state">
                             <i class="fas fa-link"></i>
                             <p>لم تضف أي روابط بعد</p>
                             <button class="btn btn-primary" onclick="openAddModal()">أضف رابطك الأول</button>
                         </div>
                     <% } else { %>
-                        <% links.forEach((link, index) => { %>
+                        <% filteredLinks.forEach((link, index) => { %>
                             <div class="link-card" data-id="<%= link.id %>" data-size="<%= link.size || 'full' %>" draggable="true">
                                 <div class="drag-handle">
                                     <i class="fas fa-grip-vertical"></i>
@@ -81,8 +115,12 @@
                                     <i class="<%= link.icon %>"></i>
                                 </div>
                                 <div class="link-info">
-                                    <strong><%= link.title %></strong>
+                                    <strong>
+                                        <%= link.title %>
+                                        <% if (link.badge) { %><span class="mini-badge"><%= link.badge %></span><% } %>
+                                    </strong>
                                     <small><%= link.url %></small>
+                                    <% if (link.description) { %><small class="link-desc-preview"><%= link.description %></small><% } %>
                                 </div>
                                 <span class="link-size-badge"><%= link.size === 'third' ? '⅓' : link.size === 'half' ? '½' : '1' %></span>
                                 <div class="link-actions">
@@ -91,7 +129,12 @@
                                             <i class="fas fa-<%= link.is_active ? 'eye' : 'eye-slash' %>"></i>
                                         </button>
                                     </form>
-                                    <button class="btn-icon edit" data-link="<%= encodeURIComponent(JSON.stringify(link)) %>" onclick="openEditModal(JSON.parse(decodeURIComponent(this.dataset.link)))" title="تعديل">
+                                    <form method="POST" action="/dashboard/links/duplicate/<%= link.id %>" style="display:inline">
+                                        <button type="submit" class="btn-icon" title="تكرار">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </form>
+                                    <button class="btn-icon edit" data-link='<%- JSON.stringify(link) %>' onclick="openEditModal(JSON.parse(this.dataset.link))" title="تعديل">
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="/dashboard/links/delete/<%= link.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
@@ -106,6 +149,32 @@
                 </div>
             </section>
 
+            <!-- Sections Section -->
+            <section class="content-section hidden" id="sections-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-layer-group"></i> أقسام الروابط</h3>
+                </div>
+                <p class="section-desc">أنشئ أقسام لتنظيم روابطك في مجموعات</p>
+                <form method="POST" action="/dashboard/sections/add" class="inline-form">
+                    <input type="text" name="title" placeholder="اسم القسم الجديد" required>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> إضافة</button>
+                </form>
+                <div class="sections-list">
+                    <% if (sections.length === 0) { %>
+                        <p class="empty-hint">لا توجد أقسام بعد</p>
+                    <% } else { %>
+                        <% sections.forEach(s => { %>
+                        <div class="section-item">
+                            <span><i class="fas fa-folder"></i> <%= s.title %></span>
+                            <form method="POST" action="/dashboard/sections/delete/<%= s.id %>" style="display:inline" onsubmit="return confirm('حذف القسم؟ الروابط لن تُحذف')">
+                                <button type="submit" class="btn-icon delete"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </section>
+
             <!-- Settings Section -->
             <section class="content-section hidden" id="settings-section">
                 <div class="section-header">
@@ -113,18 +182,38 @@
                 </div>
 
                 <form method="POST" action="/dashboard/settings" enctype="multipart/form-data" class="settings-form">
-                    <div class="form-row">
+                    <div class="form-grid">
                         <div class="form-group">
                             <label>صورة البروفايل</label>
                             <div class="profile-upload">
                                 <% if (merchant.profile_image) { %>
                                     <img src="<%= merchant.profile_image %>" alt="Profile" class="current-avatar">
                                 <% } else { %>
-                                    <div class="avatar-placeholder">
-                                        <i class="fas fa-user"></i>
-                                    </div>
+                                    <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
                                 <% } %>
                                 <input type="file" name="profile_image" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>صورة الغلاف</label>
+                            <div class="profile-upload">
+                                <% if (merchant.cover_image) { %>
+                                    <img src="<%= merchant.cover_image %>" alt="Cover" class="current-avatar" style="border-radius:8px;width:100px;height:50px">
+                                <% } else { %>
+                                    <div class="avatar-placeholder" style="border-radius:8px;width:100px;height:50px;font-size:16px"><i class="fas fa-image"></i></div>
+                                <% } %>
+                                <input type="file" name="cover_image" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>صورة الخلفية</label>
+                            <div class="profile-upload">
+                                <% if (merchant.bg_image) { %>
+                                    <img src="<%= merchant.bg_image %>" alt="BG" class="current-avatar" style="border-radius:8px;width:100px;height:50px">
+                                <% } else { %>
+                                    <div class="avatar-placeholder" style="border-radius:8px;width:100px;height:50px;font-size:16px"><i class="fas fa-panorama"></i></div>
+                                <% } %>
+                                <input type="file" name="bg_image" accept="image/*">
                             </div>
                         </div>
                     </div>
@@ -141,49 +230,83 @@
 
                     <div class="form-group">
                         <label>اللون الرئيسي</label>
-                        <input type="color" name="theme_color" value="<%= merchant.theme_color || '#8B5CF6' %>">
+                        <div class="color-row">
+                            <input type="color" name="theme_color" value="<%= merchant.theme_color || '#8B5CF6' %>">
+                            <div class="preset-colors">
+                                <button type="button" class="color-dot" data-color="#8B5CF6" style="background:#8B5CF6"></button>
+                                <button type="button" class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></button>
+                                <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981"></button>
+                                <button type="button" class="color-dot" data-color="#f59e0b" style="background:#f59e0b"></button>
+                                <button type="button" class="color-dot" data-color="#ef4444" style="background:#ef4444"></button>
+                                <button type="button" class="color-dot" data-color="#ec4899" style="background:#ec4899"></button>
+                                <button type="button" class="color-dot" data-color="#06b6d4" style="background:#06b6d4"></button>
+                                <button type="button" class="color-dot" data-color="#f97316" style="background:#f97316"></button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>ستايل الصفحة</label>
+                        <label>ثيم الصفحة</label>
                         <div class="theme-picker">
+                            <% const themes = [
+                                {v:'dark',n:'داكن'},{v:'light',n:'فاتح'},{v:'blue',n:'أزرق'},{v:'pink',n:'وردي'},
+                                {v:'emerald',n:'زمردي'},{v:'sunset',n:'غروب'},{v:'ocean',n:'محيط'},{v:'rose',n:'روز'},
+                                {v:'midnight',n:'ليلي'},{v:'coffee',n:'قهوة'},{v:'forest',n:'غابة'},{v:'lavender',n:'لافندر'},
+                                {v:'cherry',n:'كرزي'},{v:'arctic',n:'قطبي'}
+                            ]; %>
+                            <% themes.forEach(t => { %>
                             <label class="theme-option">
-                                <input type="radio" name="theme_style" value="dark" <%= (merchant.theme_style || 'dark') === 'dark' ? 'checked' : '' %>>
-                                <div class="theme-preview theme-dark">
+                                <input type="radio" name="theme_style" value="<%= t.v %>" <%= (merchant.theme_style || 'dark') === t.v ? 'checked' : '' %>>
+                                <div class="theme-preview theme-<%= t.v %>">
                                     <div class="tp-circle"></div>
                                     <div class="tp-line"></div>
                                     <div class="tp-line short"></div>
-                                    <span>داكن</span>
+                                    <span><%= t.n %></span>
                                 </div>
                             </label>
-                            <label class="theme-option">
-                                <input type="radio" name="theme_style" value="light" <%= merchant.theme_style === 'light' ? 'checked' : '' %>>
-                                <div class="theme-preview theme-light">
-                                    <div class="tp-circle"></div>
-                                    <div class="tp-line"></div>
-                                    <div class="tp-line short"></div>
-                                    <span>فاتح</span>
-                                </div>
-                            </label>
-                            <label class="theme-option">
-                                <input type="radio" name="theme_style" value="blue" <%= merchant.theme_style === 'blue' ? 'checked' : '' %>>
-                                <div class="theme-preview theme-blue">
-                                    <div class="tp-circle"></div>
-                                    <div class="tp-line"></div>
-                                    <div class="tp-line short"></div>
-                                    <span>أزرق</span>
-                                </div>
-                            </label>
-                            <label class="theme-option">
-                                <input type="radio" name="theme_style" value="pink" <%= merchant.theme_style === 'pink' ? 'checked' : '' %>>
-                                <div class="theme-preview theme-pink">
-                                    <div class="tp-circle"></div>
-                                    <div class="tp-line"></div>
-                                    <div class="tp-line short"></div>
-                                    <span>وردي</span>
-                                </div>
-                            </label>
+                            <% }) %>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>شكل الأزرار</label>
+                        <div class="shape-picker">
+                            <% const shapes = [{v:'rounded',n:'مستدير',icon:'⬜'},{v:'square',n:'مربع',icon:'◻️'},{v:'pill',n:'كبسولة',icon:'💊'},{v:'circle',n:'دائري',icon:'⭕'}]; %>
+                            <% shapes.forEach(s => { %>
+                            <label class="shape-option">
+                                <input type="radio" name="button_shape" value="<%= s.v %>" <%= (merchant.button_shape||'rounded')===s.v?'checked':'' %>>
+                                <div class="shape-preview"><span><%= s.icon %></span><small><%= s.n %></small></div>
+                            </label>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>الخط</label>
+                            <select name="font_family">
+                                <% ['Tajawal','Cairo','Almarai','Changa','Readex Pro','Noto Kufi Arabic'].forEach(f => { %>
+                                <option value="<%= f %>" <%= (merchant.font_family||'Tajawal')===f?'selected':'' %>><%= f %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>حجم الخط</label>
+                            <select name="font_size">
+                                <option value="small" <%= merchant.font_size==='small'?'selected':'' %>>صغير</option>
+                                <option value="medium" <%= (merchant.font_size||'medium')==='medium'?'selected':'' %>>متوسط</option>
+                                <option value="large" <%= merchant.font_size==='large'?'selected':'' %>>كبير</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>شكل الكروت</label>
+                        <select name="card_style">
+                            <% [{v:'default',n:'افتراضي'},{v:'glass',n:'زجاجي'},{v:'flat',n:'مسطح'},{v:'bordered',n:'محدد'},{v:'shadow',n:'ظل'}].forEach(c => { %>
+                            <option value="<%= c.v %>" <%= (merchant.card_style||'default')===c.v?'selected':'' %>><%= c.n %></option>
+                            <% }) %>
+                        </select>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
@@ -191,6 +314,56 @@
                     </button>
                 </form>
             </section>
+
+            <!-- Tickets Section -->
+            <section class="content-section hidden" id="tickets-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-headset"></i> الدعم الفني</h3>
+                </div>
+                <form method="POST" action="/dashboard/tickets/submit" class="ticket-form">
+                    <div class="form-group">
+                        <label>الموضوع</label>
+                        <input type="text" name="subject" placeholder="موضوع الرسالة" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الرسالة</label>
+                        <textarea name="message" rows="4" placeholder="اكتب رسالتك هنا..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> إرسال</button>
+                </form>
+                <% if (myTickets && myTickets.length > 0) { %>
+                <div class="tickets-list">
+                    <h4>تذاكرك السابقة</h4>
+                    <% myTickets.forEach(t => { %>
+                    <div class="ticket-item">
+                        <div class="ticket-head">
+                            <strong><%= t.subject %></strong>
+                            <span class="ticket-status status-<%= t.status %>"><%= t.status === 'open' ? 'مفتوحة' : t.status === 'replied' ? 'تم الرد' : 'مغلقة' %></span>
+                        </div>
+                        <p><%= t.message %></p>
+                        <% if (t.admin_reply) { %><div class="ticket-reply"><i class="fas fa-reply"></i> <%= t.admin_reply %></div><% } %>
+                        <small><%= new Date(t.created_at).toLocaleDateString('ar') %></small>
+                    </div>
+                    <% }) %>
+                </div>
+                <% } %>
+            </section>
+
+            <!-- Notifications Section -->
+            <% if (notifications && notifications.length > 0) { %>
+            <section class="content-section hidden" id="notif-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bell"></i> الإشعارات</h3>
+                </div>
+                <% notifications.forEach(n => { %>
+                <div class="notif-item">
+                    <strong><%= n.title %></strong>
+                    <p><%= n.message %></p>
+                    <small><%= new Date(n.created_at).toLocaleDateString('ar') %></small>
+                </div>
+                <% }) %>
+            </section>
+            <% } %>
 
             <!-- Live Preview -->
             <section class="preview-panel">
@@ -219,6 +392,10 @@
                     <input type="url" name="url" placeholder="https://..." required>
                 </div>
                 <div class="form-group">
+                    <label>وصف (اختياري)</label>
+                    <input type="text" name="description" placeholder="وصف قصير يظهر تحت العنوان">
+                </div>
+                <div class="form-group">
                     <label>الأيقونة</label>
                     <div class="icon-picker" id="icon-picker">
                         <input type="hidden" name="icon" id="selected-icon" value="fas fa-link">
@@ -241,9 +418,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>لون الزر</label>
-                    <input type="color" name="color" value="#8B5CF6">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>لون الزر</label>
+                        <input type="color" name="color" value="#8B5CF6">
+                    </div>
+                    <div class="form-group">
+                        <label>تدرج (اختياري)</label>
+                        <select name="gradient">
+                            <option value="">بدون</option>
+                            <option value="linear-gradient(135deg,#8B5CF6,#06b6d4)">بنفسجي-سماوي</option>
+                            <option value="linear-gradient(135deg,#f59e0b,#ef4444)">برتقالي-أحمر</option>
+                            <option value="linear-gradient(135deg,#10b981,#3b82f6)">أخضر-أزرق</option>
+                            <option value="linear-gradient(135deg,#ec4899,#8B5CF6)">وردي-بنفسجي</option>
+                            <option value="linear-gradient(135deg,#f97316,#f59e0b)">برتقالي-ذهبي</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>حجم الزر</label>
@@ -260,6 +450,58 @@
                             <input type="radio" name="size" value="third">
                             <div class="size-preview size-third"><span>ثلث ⅓</span></div>
                         </label>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>شارة</label>
+                        <select name="badge">
+                            <option value="">بدون</option>
+                            <option value="جديد">جديد</option>
+                            <option value="عرض">عرض</option>
+                            <option value="🔥">🔥</option>
+                            <option value="⭐">⭐</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نمط الحدود</label>
+                        <select name="border_style">
+                            <option value="none">بدون</option>
+                            <option value="solid">خط متصل</option>
+                            <option value="dashed">خط متقطع</option>
+                            <option value="double">خط مزدوج</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>إظهار الأيقونة</label>
+                        <select name="show_icon">
+                            <option value="1">نعم</option>
+                            <option value="0">لا</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>إظهار النص</label>
+                        <select name="show_text">
+                            <option value="1">نعم</option>
+                            <option value="0">لا</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>عداد تنازلي</label>
+                        <input type="datetime-local" name="countdown_date">
+                    </div>
+                    <div class="form-group">
+                        <label>القسم</label>
+                        <select name="section_id">
+                            <option value="0">بدون قسم</option>
+                            <% sections.forEach(s => { %>
+                            <option value="<%= s.id %>"><%= s.title %></option>
+                            <% }) %>
+                        </select>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
@@ -287,6 +529,10 @@
                     <input type="url" id="edit-url" required>
                 </div>
                 <div class="form-group">
+                    <label>وصف</label>
+                    <input type="text" id="edit-description">
+                </div>
+                <div class="form-group">
                     <label>الأيقونة</label>
                     <div class="icon-picker" id="edit-icon-picker">
                         <input type="hidden" id="edit-selected-icon">
@@ -309,9 +555,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>لون الزر</label>
-                    <input type="color" id="edit-color" value="#8B5CF6">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>لون الزر</label>
+                        <input type="color" id="edit-color" value="#8B5CF6">
+                    </div>
+                    <div class="form-group">
+                        <label>تدرج</label>
+                        <select id="edit-gradient">
+                            <option value="">بدون</option>
+                            <option value="linear-gradient(135deg,#8B5CF6,#06b6d4)">بنفسجي-سماوي</option>
+                            <option value="linear-gradient(135deg,#f59e0b,#ef4444)">برتقالي-أحمر</option>
+                            <option value="linear-gradient(135deg,#10b981,#3b82f6)">أخضر-أزرق</option>
+                            <option value="linear-gradient(135deg,#ec4899,#8B5CF6)">وردي-بنفسجي</option>
+                            <option value="linear-gradient(135deg,#f97316,#f59e0b)">برتقالي-ذهبي</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>حجم الزر</label>
@@ -330,6 +589,58 @@
                         </label>
                     </div>
                 </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>شارة</label>
+                        <select id="edit-badge">
+                            <option value="">بدون</option>
+                            <option value="جديد">جديد</option>
+                            <option value="عرض">عرض</option>
+                            <option value="🔥">🔥</option>
+                            <option value="⭐">⭐</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نمط الحدود</label>
+                        <select id="edit-border-style">
+                            <option value="none">بدون</option>
+                            <option value="solid">خط متصل</option>
+                            <option value="dashed">خط متقطع</option>
+                            <option value="double">خط مزدوج</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>إظهار الأيقونة</label>
+                        <select id="edit-show-icon">
+                            <option value="1">نعم</option>
+                            <option value="0">لا</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>إظهار النص</label>
+                        <select id="edit-show-text">
+                            <option value="1">نعم</option>
+                            <option value="0">لا</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>عداد تنازلي</label>
+                        <input type="datetime-local" id="edit-countdown">
+                    </div>
+                    <div class="form-group">
+                        <label>القسم</label>
+                        <select id="edit-section-id">
+                            <option value="0">بدون قسم</option>
+                            <% sections.forEach(s => { %>
+                            <option value="<%= s.id %>"><%= s.title %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-save"></i> حفظ التعديلات
                 </button>
@@ -338,6 +649,9 @@
     </div>
 
     <script>document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);</script>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
 
     <!-- Preview FAB (mobile) -->
     <button class="preview-fab" onclick="openPreviewModal()" title="معاينة الصفحة">

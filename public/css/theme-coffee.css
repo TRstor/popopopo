@@ -1,0 +1,11 @@
+:root {
+    --bg: linear-gradient(135deg, #44403c, #1c1917);
+    --text: #ffffff;
+    --text-muted: #d6d3d1;
+    --accent: #a8a29e;
+    --card-bg: rgba(68, 64, 60, 0.6);
+    --border: rgba(168, 162, 158, 0.15);
+    --shadow: 0 4px 20px rgba(0,0,0,0.3);
+    --btn-text: #ffffff;
+    --btn-shadow: 0 4px 15px rgba(168, 162, 158, 0.1);
+}

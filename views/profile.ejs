@@ -7,10 +7,27 @@
     <meta name="description" content="<%= merchant.store_desc || merchant.store_name %>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700;800&family=Almarai:wght@400;700;800&family=Changa:wght@400;600;700;800&family=Readex+Pro:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/profile.css">
     <link rel="stylesheet" href="/css/theme-<%= merchant.theme_style || 'dark' %>.css">
+    <style>
+        body { font-family: '<%= merchant.font_family || "Tajawal" %>', sans-serif; }
+        <% if (merchant.font_size === 'small') { %>
+        .profile-name { font-size: 17px; }
+        .profile-desc { font-size: 12px; }
+        .profile-link span { font-size: 12px; }
+        <% } else if (merchant.font_size === 'large') { %>
+        .profile-name { font-size: 24px; }
+        .profile-desc { font-size: 15px; }
+        .profile-link span { font-size: 16px; }
+        <% } %>
+        <% if (merchant.bg_image) { %>
+        body { background-image: url('<%= merchant.bg_image %>'); background-size: cover; background-position: center; background-attachment: fixed; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 0; }
+        .profile-page { position: relative; z-index: 1; }
+        <% } %>
+    </style>
 </head>
 <body>
     <div class="profile-page">
@@ -18,7 +35,13 @@
             <span>Link<span class="brand-highlight">in1</span></span>
         </div>
 
-        <div class="profile-card">
+        <% if (merchant.cover_image) { %>
+        <div class="cover-image">
+            <img src="<%= merchant.cover_image %>" alt="غلاف">
+        </div>
+        <% } %>
+
+        <div class="profile-card card-<%= merchant.card_style || 'default' %>">
             <div class="profile-avatar">
                 <% if (merchant.profile_image) { %>
                     <img src="<%= merchant.profile_image %>" alt="<%= merchant.store_name %>">
@@ -28,19 +51,40 @@
                     </div>
                 <% } %>
             </div>
-            <h1 class="profile-name"><%= merchant.store_name %></h1>
+            <h1 class="profile-name">
+                <% if (merchant.is_verified) { %><i class="fas fa-check-circle verified-icon"></i> <% } %>
+                <%= merchant.store_name %>
+            </h1>
             <% if (merchant.store_desc) { %>
                 <p class="profile-desc"><%= merchant.store_desc %></p>
             <% } %>
-            <div class="profile-badge"><i class="fas fa-check-circle"></i> اجمع كل روابطك في صفحة واحدة</div>
+
+            <div class="profile-actions">
+                <button class="share-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> مشاركة</button>
+                <span class="view-count"><i class="fas fa-eye"></i> <%= viewCount %></span>
+            </div>
         </div>
 
         <div class="links-container">
-            <% links.filter(l => l.is_active).forEach(link => { %>
-                <a href="<%= link.url %>" class="profile-link size-<%= link.size || 'full' %>" target="_blank" rel="noopener noreferrer" data-bg="<%= link.color %>">
-                    <i class="<%= link.icon %>"></i>
-                    <span><%= link.title %></span>
-                </a>
+            <% 
+            const activeSections = sections || [];
+            const unsectionedLinks = links.filter(l => l.is_active && (!l.section_id || l.section_id === 0));
+            %>
+
+            <% if (unsectionedLinks.length > 0) { %>
+                <% unsectionedLinks.forEach(link => { %>
+                    <%- include('partials/profile-link', { link, merchant }) %>
+                <% }) %>
+            <% } %>
+
+            <% activeSections.forEach(section => { %>
+                <% const sectionLinks = links.filter(l => l.is_active && l.section_id === section.id); %>
+                <% if (sectionLinks.length > 0) { %>
+                    <div class="section-header-row"><span><%= section.title %></span></div>
+                    <% sectionLinks.forEach(link => { %>
+                        <%- include('partials/profile-link', { link, merchant }) %>
+                    <% }) %>
+                <% } %>
             <% }) %>
         </div>
 
@@ -48,6 +92,58 @@
             <a href="/">Linkin1</a>
         </div>
     </div>
-    <script>document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);</script>
+
+    <script>
+    // Apply button backgrounds
+    document.querySelectorAll('[data-bg]').forEach(el => {
+        const bg = el.dataset.bg;
+        if (bg) el.style.background = bg;
+    });
+    document.querySelectorAll('[data-gradient]').forEach(el => {
+        const g = el.dataset.gradient;
+        if (g) el.style.background = g;
+    });
+
+    // Countdown timers
+    document.querySelectorAll('[data-countdown]').forEach(el => {
+        const target = new Date(el.dataset.countdown).getTime();
+        if (isNaN(target)) return;
+        const tick = () => {
+            const now = Date.now();
+            const diff = target - now;
+            if (diff <= 0) { el.textContent = 'انتهى'; return; }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            el.textContent = (d > 0 ? d + 'ي ' : '') + h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        };
+        tick();
+        setInterval(tick, 1000);
+    });
+
+    // Share
+    function shareProfile() {
+        const url = window.location.href;
+        const title = document.title;
+        if (navigator.share) {
+            navigator.share({ title, url });
+        } else {
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.querySelector('.share-btn');
+                btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+                setTimeout(() => btn.innerHTML = '<i class="fas fa-share-alt"></i> مشاركة', 2000);
+            });
+        }
+    }
+
+    // Track clicks
+    document.querySelectorAll('.profile-link').forEach(el => {
+        el.addEventListener('click', () => {
+            const id = el.dataset.linkId;
+            if (id) fetch('/api/links/click/' + id, { method: 'POST' }).catch(() => {});
+        });
+    });
+    </script>
 </body>
 </html>

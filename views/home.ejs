@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TR Store - منصة روابط التجار</title>
+    <title>Linkin1 - اجمع كل روابطك في صفحة واحدة</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -13,57 +13,143 @@
 <body>
     <div class="landing-page">
         <nav class="landing-nav">
-            <div class="nav-brand">
-                <i class="fas fa-link"></i> TR Store
-            </div>
+            <div class="nav-brand"><i class="fas fa-link"></i> Linkin1</div>
             <div class="nav-links">
-                <a href="/login" class="btn btn-outline">تسجيل دخول</a>
-                <a href="/register" class="btn btn-primary">إنشاء حساب</a>
+                <a href="/directory" class="btn btn-sm" style="color:#888;text-decoration:none;">دليل التجار</a>
+                <a href="/login" class="btn btn-outline btn-sm">تسجيل دخول</a>
+                <a href="/register" class="btn btn-primary btn-sm">إنشاء حساب</a>
             </div>
         </nav>
 
         <div class="hero">
+            <div class="hero-badge"><i class="fas fa-users"></i> أكثر من <strong><%= totalMerchants %></strong> تاجر يستخدمون Linkin1</div>
             <h1>اجمع كل روابطك في صفحة واحدة</h1>
             <p>أنشئ صفحتك الخاصة وشارك جميع روابط التواصل والمتجر مع عملائك بسهولة</p>
-            <a href="/register" class="btn btn-primary btn-lg">ابدأ الآن مجاناً <i class="fas fa-arrow-left"></i></a>
+            <div class="hero-buttons">
+                <a href="/register" class="btn btn-primary btn-lg">ابدأ الآن مجاناً <i class="fas fa-arrow-left"></i></a>
+            </div>
+        </div>
 
-            <div class="hero-features">
-                <div class="feature">
-                    <i class="fas fa-palette"></i>
-                    <span>تصميم مخصص</span>
+        <!-- Features Section -->
+        <div class="hero-features" id="features">
+            <div class="feature">
+                <i class="fas fa-palette"></i>
+                <span>14 ثيم مختلف</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-arrows-alt"></i>
+                <span>سحب وإفلات</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-link"></i>
+                <span>رابط خاص بك</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-mobile-alt"></i>
+                <span>متجاوب مع الجوال</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-chart-bar"></i>
+                <span>إحصائيات الزيارات</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <span>شارة توثيق</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-th-large"></i>
+                <span>أحجام مختلفة</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-font"></i>
+                <span>خطوط متعددة</span>
+            </div>
+        </div>
+
+        <!-- How to Start Section -->
+        <div class="steps-section" id="howto">
+            <h2>كيف تبدأ؟</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h3>سجّل حسابك</h3>
+                    <p>أنشئ حساب مجاني في ثواني واختر اسم المستخدم الخاص بك</p>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-arrows-alt"></i>
-                    <span>سحب وإفلات</span>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h3>أضف روابطك</h3>
+                    <p>أضف جميع روابط التواصل والمتجر والمنتجات بسهولة</p>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-link"></i>
-                    <span>رابط خاص بك</span>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-mobile-alt"></i>
-                    <span>متجاوب مع الجوال</span>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h3>شارك صفحتك</h3>
+                    <p>انسخ رابطك الخاص وشاركه مع عملائك في كل مكان</p>
                 </div>
             </div>
         </div>
 
-        <!-- Preview mockup -->
-        <div class="preview-section">
-            <div class="phone-mockup">
-                <div class="mockup-header"></div>
-                <div class="mockup-profile">
-                    <div class="mockup-avatar"></div>
-                    <div class="mockup-name"></div>
-                    <div class="mockup-desc"></div>
-                </div>
-                <div class="mockup-links">
-                    <div class="mockup-link green"></div>
-                    <div class="mockup-link orange"></div>
-                    <div class="mockup-link purple"></div>
-                    <div class="mockup-link dark"></div>
-                </div>
+        <% if (featuredMerchants.length > 0) { %>
+        <!-- Featured Merchants -->
+        <div class="featured-section">
+            <h2>تجار يستخدمون Linkin1</h2>
+            <div class="featured-grid">
+                <% featuredMerchants.forEach(m => { %>
+                <a href="/<%= m.username %>" class="featured-card" target="_blank">
+                    <img src="<%= m.profile_image %>" alt="<%= m.store_name %>" class="featured-img">
+                    <strong><%= m.store_name %></strong>
+                    <small>@<%= m.username %></small>
+                </a>
+                <% }) %>
             </div>
         </div>
+        <% } %>
+
+        <!-- FAQ Section -->
+        <div class="faq-section" id="faq">
+            <h2>الأسئلة الشائعة</h2>
+            <div class="faq-list">
+                <details class="faq-item">
+                    <summary>هل Linkin1 مجاني؟</summary>
+                    <p>نعم، Linkin1 مجاني بالكامل. يمكنك إنشاء صفحتك وإضافة روابطك بدون أي رسوم.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>كيف أحصل على شارة التوثيق؟</summary>
+                    <p>شارة التوثيق تُمنح للتجار المميزين من قبل إدارة المنصة. تواصل معنا عبر الدعم الفني.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>هل يمكنني تغيير اسم المستخدم؟</summary>
+                    <p>حالياً اسم المستخدم يتم اختياره عند التسجيل ولا يمكن تغييره.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>كم عدد الروابط التي يمكنني إضافتها؟</summary>
+                    <p>يمكنك إضافة عدد غير محدود من الروابط في صفحتك.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>هل يعمل الموقع على الجوال؟</summary>
+                    <p>نعم، جميع الصفحات مصممة لتعمل بشكل ممتاز على جميع الأجهزة.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>كيف أتواصل مع الدعم؟</summary>
+                    <p>يمكنك إرسال تذكرة دعم فني من لوحة التحكم، أو التواصل عبر واتساب.</p>
+                </details>
+            </div>
+        </div>
+
+        <!-- WhatsApp Support Button -->
+        <a href="https://wa.me/966500000000" class="whatsapp-fab" target="_blank" rel="noopener">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <div class="footer-links">
+                <a href="/directory">دليل التجار</a>
+                <a href="#features">المميزات</a>
+                <a href="#howto">كيف تبدأ</a>
+                <a href="#faq">الأسئلة الشائعة</a>
+            </div>
+            <p>&copy; 2026 Linkin1 - جميع الحقوق محفوظة</p>
+        </footer>
     </div>
 </body>
 </html>

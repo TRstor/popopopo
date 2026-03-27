@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التذاكر - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
+            <nav>
+                <a href="/admin"><i class="fas fa-chart-bar"></i> الرئيسية</a>
+                <a href="/admin/merchants"><i class="fas fa-users"></i> التجار</a>
+                <a href="/admin/tickets" class="active"><i class="fas fa-headset"></i> التذاكر</a>
+                <a href="/admin/notifications"><i class="fas fa-bell"></i> الإشعارات</a>
+                <a href="/admin/status"><i class="fas fa-server"></i> حالة الخدمة</a>
+                <a href="/dashboard"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <h1>تذاكر الدعم الفني</h1>
+            <% if (tickets.length === 0) { %>
+            <div class="empty-admin"><i class="fas fa-inbox"></i><p>لا توجد تذاكر</p></div>
+            <% } else { %>
+            <div class="tickets-admin-list">
+                <% tickets.forEach(t => { %>
+                <div class="ticket-admin-card">
+                    <div class="ticket-admin-header">
+                        <strong><%= t.subject %></strong>
+                        <span class="status-badge <%= t.status === 'open' ? 'active-s' : t.status === 'replied' ? 'verified' : 'banned' %>">
+                            <%= t.status === 'open' ? 'مفتوحة' : t.status === 'replied' ? 'تم الرد' : 'مغلقة' %>
+                        </span>
+                    </div>
+                    <p class="ticket-msg"><%= t.message %></p>
+                    <small class="ticket-meta">من: تاجر #<%= t.merchant_id %> | <%= new Date(t.created_at).toLocaleDateString('ar') %></small>
+                    <% if (t.admin_reply) { %>
+                    <div class="admin-reply-box"><i class="fas fa-reply"></i> <%= t.admin_reply %></div>
+                    <% } %>
+                    <% if (t.status !== 'closed') { %>
+                    <form method="POST" action="/admin/tickets/<%= t.id %>/reply" class="reply-form">
+                        <input type="text" name="reply" placeholder="اكتب ردك..." required>
+                        <button type="submit" class="admin-btn primary"><i class="fas fa-reply"></i></button>
+                    </form>
+                    <form method="POST" action="/admin/tickets/<%= t.id %>/close" style="display:inline">
+                        <button class="admin-btn warning" style="margin-top:6px"><i class="fas fa-lock"></i> إغلاق</button>
+                    </form>
+                    <% } %>
+                </div>
+                <% }) %>
+            </div>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>

@@ -8,7 +8,9 @@ router.get('/', (req, res) => {
     if (req.session.user) {
         return res.redirect('/dashboard');
     }
-    res.render('home');
+    const totalMerchants = db.prepare('SELECT COUNT(*) as count FROM merchants WHERE is_banned = 0').get().count;
+    const featuredMerchants = db.prepare("SELECT username, store_name, profile_image, store_desc FROM merchants WHERE is_banned = 0 AND profile_image != '' ORDER BY is_verified DESC LIMIT 6").all();
+    res.render('home', { totalMerchants, featuredMerchants });
 });
 
 // Login page
@@ -61,7 +63,7 @@ router.post('/register', (req, res) => {
     }
 
     // Check reserved usernames
-    const reserved = ['login', 'register', 'dashboard', 'api', 'admin', 'logout', 'uploads', 'public'];
+    const reserved = ['login', 'register', 'dashboard', 'api', 'admin', 'logout', 'uploads', 'public', 'directory', 'css', 'js'];
     if (reserved.includes(username.toLowerCase())) {
         return res.render('register', { error: 'اسم المستخدم محجوز، اختر اسماً آخر' });
     }

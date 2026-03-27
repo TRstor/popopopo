@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإشعارات - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
+            <nav>
+                <a href="/admin"><i class="fas fa-chart-bar"></i> الرئيسية</a>
+                <a href="/admin/merchants"><i class="fas fa-users"></i> التجار</a>
+                <a href="/admin/tickets"><i class="fas fa-headset"></i> التذاكر</a>
+                <a href="/admin/notifications" class="active"><i class="fas fa-bell"></i> الإشعارات</a>
+                <a href="/admin/status"><i class="fas fa-server"></i> حالة الخدمة</a>
+                <a href="/dashboard"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <h1>إرسال إشعارات</h1>
+            <form method="POST" action="/admin/notifications/send" class="notif-form">
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <input type="text" name="title" placeholder="عنوان الإشعار" required>
+                </div>
+                <div class="form-group">
+                    <label>الرسالة</label>
+                    <textarea name="message" rows="3" placeholder="نص الإشعار..." required></textarea>
+                </div>
+                <button type="submit" class="admin-btn primary"><i class="fas fa-paper-plane"></i> إرسال للجميع</button>
+            </form>
+            <h2 style="margin-top:30px;font-size:18px;color:#aaa">الإشعارات السابقة</h2>
+            <% if (notifications.length === 0) { %>
+            <p style="color:#555;padding:20px;text-align:center">لا توجد إشعارات</p>
+            <% } else { %>
+            <% notifications.forEach(n => { %>
+            <div class="notif-admin-card">
+                <div class="notif-admin-header">
+                    <strong><%= n.title %></strong>
+                    <form method="POST" action="/admin/notifications/<%= n.id %>/delete" style="display:inline" onsubmit="return confirm('حذف؟')">
+                        <button class="admin-btn danger" style="padding:4px 8px"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+                <p><%= n.message %></p>
+                <small><%= new Date(n.created_at).toLocaleDateString('ar') %></small>
+            </div>
+            <% }) %>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>

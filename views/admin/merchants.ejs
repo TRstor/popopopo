@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة التجار - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
+            <nav>
+                <a href="/admin"><i class="fas fa-chart-bar"></i> الرئيسية</a>
+                <a href="/admin/merchants" class="active"><i class="fas fa-users"></i> التجار</a>
+                <a href="/admin/tickets"><i class="fas fa-headset"></i> التذاكر</a>
+                <a href="/admin/notifications"><i class="fas fa-bell"></i> الإشعارات</a>
+                <a href="/admin/status"><i class="fas fa-server"></i> حالة الخدمة</a>
+                <a href="/dashboard"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <h1>إدارة التجار</h1>
+            <form class="admin-search" method="GET" action="/admin/merchants">
+                <input type="text" name="q" placeholder="بحث بالاسم أو اسم المستخدم..." value="<%= search || '' %>">
+                <button type="submit"><i class="fas fa-search"></i> بحث</button>
+            </form>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الصورة</th>
+                            <th>الاسم</th>
+                            <th>المستخدم</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% merchants.forEach(m => { %>
+                        <tr>
+                            <td><%= m.id %></td>
+                            <td>
+                                <% if (m.profile_image) { %>
+                                <img src="<%= m.profile_image %>" class="table-avatar">
+                                <% } else { %>
+                                <div class="table-avatar-placeholder"><i class="fas fa-user"></i></div>
+                                <% } %>
+                            </td>
+                            <td>
+                                <%= m.store_name %>
+                                <% if (m.is_verified) { %><i class="fas fa-check-circle" style="color:#3b82f6"></i><% } %>
+                                <% if (m.is_admin) { %><span class="role-badge">مشرف</span><% } %>
+                            </td>
+                            <td><a href="/<%= m.username %>" target="_blank">@<%= m.username %></a></td>
+                            <td>
+                                <% if (m.is_banned) { %>
+                                <span class="status-badge banned">محظور</span>
+                                <% } else { %>
+                                <span class="status-badge active-s">نشط</span>
+                                <% } %>
+                            </td>
+                            <td class="actions-cell">
+                                <% if (m.is_banned) { %>
+                                <form method="POST" action="/admin/merchants/<%= m.id %>/unban" style="display:inline">
+                                    <button class="admin-btn success" title="إلغاء الحظر"><i class="fas fa-unlock"></i></button>
+                                </form>
+                                <% } else { %>
+                                <form method="POST" action="/admin/merchants/<%= m.id %>/ban" style="display:inline" onsubmit="return confirm('حظر هذا التاجر؟')">
+                                    <button class="admin-btn danger" title="حظر"><i class="fas fa-ban"></i></button>
+                                </form>
+                                <% } %>
+                                <% if (m.is_verified) { %>
+                                <form method="POST" action="/admin/merchants/<%= m.id %>/unverify" style="display:inline">
+                                    <button class="admin-btn warning" title="إلغاء التوثيق"><i class="fas fa-times-circle"></i></button>
+                                </form>
+                                <% } else { %>
+                                <form method="POST" action="/admin/merchants/<%= m.id %>/verify" style="display:inline">
+                                    <button class="admin-btn primary" title="توثيق"><i class="fas fa-check-circle"></i></button>
+                                </form>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
