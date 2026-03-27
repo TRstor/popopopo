@@ -2,7 +2,15 @@
 
 // Sidebar toggle (mobile)
 function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+    document.body.style.overflow = '';
 }
 
 // Show settings section
