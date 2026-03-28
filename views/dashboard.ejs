@@ -236,10 +236,12 @@
 
                     <div class="form-group">
                         <label>اختر تصميم جاهز</label>
+                        <p class="form-hint">اختر تصميم وسيتم تطبيق الثيم والأزرار والترتيب تلقائياً</p>
                         <div class="design-presets">
                             <!-- Preset 1: Classic Dark -->
-                            <div class="design-preset" data-preset="1" data-theme="dark" data-shape="rounded" data-card="default" data-font="Tajawal" data-fontsize="medium" data-color="#8B5CF6" onclick="applyPreset(this)">
-                                <div class="preset-device" style="background:#0a0a0a">
+                            <div class="design-preset" data-preset="1">
+                                <button type="button" class="preset-eye" onclick="previewPreset(1)" title="معاينة"><i class="fas fa-eye"></i></button>
+                                <div class="preset-device" style="background:#0a0a0a" onclick="applyPreset(1, this.parentElement.parentElement)">
                                     <div class="pd-notch"></div>
                                     <div class="pd-avatar" style="background:#8B5CF6"></div>
                                     <div class="pd-name" style="background:rgba(255,255,255,0.7)"></div>
@@ -256,8 +258,9 @@
                                 <span class="preset-label">كلاسيكي</span>
                             </div>
                             <!-- Preset 2: Modern Light -->
-                            <div class="design-preset" data-preset="2" data-theme="light" data-shape="pill" data-card="glass" data-font="Cairo" data-fontsize="medium" data-color="#3b82f6" onclick="applyPreset(this)">
-                                <div class="preset-device" style="background:#f5f5f7">
+                            <div class="design-preset" data-preset="2">
+                                <button type="button" class="preset-eye" onclick="previewPreset(2)" title="معاينة"><i class="fas fa-eye"></i></button>
+                                <div class="preset-device" style="background:#f5f5f7" onclick="applyPreset(2, this.parentElement)">
                                     <div class="pd-notch" style="background:rgba(0,0,0,0.1)"></div>
                                     <div class="pd-avatar" style="background:#3b82f6"></div>
                                     <div class="pd-name" style="background:rgba(0,0,0,0.5)"></div>
@@ -271,26 +274,28 @@
                                 <span class="preset-label">عصري</span>
                             </div>
                             <!-- Preset 3: Elegant Ocean -->
-                            <div class="design-preset" data-preset="3" data-theme="ocean" data-shape="square" data-card="shadow" data-font="Almarai" data-fontsize="large" data-color="#06b6d4" onclick="applyPreset(this)">
-                                <div class="preset-device" style="background:linear-gradient(135deg,#0c4a6e,#164e63)">
+                            <div class="design-preset" data-preset="3">
+                                <button type="button" class="preset-eye" onclick="previewPreset(3)" title="معاينة"><i class="fas fa-eye"></i></button>
+                                <div class="preset-device" style="background:linear-gradient(135deg,#0c4a6e,#164e63)" onclick="applyPreset(3, this.parentElement)">
                                     <div class="pd-notch" style="background:rgba(255,255,255,0.15)"></div>
                                     <div class="pd-avatar" style="background:#06b6d4"></div>
                                     <div class="pd-name" style="background:rgba(255,255,255,0.6)"></div>
                                     <div class="pd-buttons">
-                                        <div class="pd-btn" style="background:#06b6d4;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                        <div class="pd-btn" style="background:#06b6d4;border-radius:4px"></div>
                                         <div class="pd-btn-row">
-                                            <div class="pd-btn-half" style="background:#0ea5e9;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
-                                            <div class="pd-btn-half" style="background:#22d3ee;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                            <div class="pd-btn-half" style="background:#0ea5e9;border-radius:4px"></div>
+                                            <div class="pd-btn-half" style="background:#22d3ee;border-radius:4px"></div>
                                         </div>
-                                        <div class="pd-btn" style="background:#0284c7;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
-                                        <div class="pd-btn" style="background:#67e8f9;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                        <div class="pd-btn" style="background:#0284c7;border-radius:4px"></div>
+                                        <div class="pd-btn" style="background:#67e8f9;border-radius:4px"></div>
                                     </div>
                                 </div>
                                 <span class="preset-label">أنيق</span>
                             </div>
                             <!-- Preset 4: Bold Sunset -->
-                            <div class="design-preset" data-preset="4" data-theme="sunset" data-shape="circle" data-card="bordered" data-font="Changa" data-fontsize="large" data-color="#f59e0b" onclick="applyPreset(this)">
-                                <div class="preset-device" style="background:linear-gradient(135deg,#451a03,#7c2d12)">
+                            <div class="design-preset" data-preset="4">
+                                <button type="button" class="preset-eye" onclick="previewPreset(4)" title="معاينة"><i class="fas fa-eye"></i></button>
+                                <div class="preset-device" style="background:linear-gradient(135deg,#451a03,#7c2d12)" onclick="applyPreset(4, this.parentElement)">
                                     <div class="pd-notch" style="background:rgba(255,255,255,0.15)"></div>
                                     <div class="pd-avatar" style="background:#f59e0b"></div>
                                     <div class="pd-name" style="background:rgba(255,255,255,0.6)"></div>
@@ -731,6 +736,22 @@
             </div>
             <div class="preview-modal-frame">
                 <iframe src="/<%= merchant.username %>" id="preview-modal-iframe"></iframe>
+            </div>
+        </div>
+    </div>
+    <!-- Preset Preview Modal -->
+    <div class="modal-overlay" id="preset-preview-modal">
+        <div class="preset-preview-content">
+            <div class="preset-preview-header">
+                <h3><i class="fas fa-eye"></i> معاينة التصميم</h3>
+                <button onclick="closeModal('preset-preview-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preset-preview-body" id="preset-preview-body"></div>
+            <div class="preset-preview-footer">
+                <button type="button" class="btn btn-primary" id="preset-apply-btn">
+                    <i class="fas fa-check"></i> تطبيق هذا التصميم
+                </button>
+                <button type="button" class="btn btn-outline" onclick="closeModal('preset-preview-modal')">إلغاء</button>
             </div>
         </div>
     </div>

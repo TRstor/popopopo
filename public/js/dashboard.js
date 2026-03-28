@@ -1,30 +1,139 @@
 // ========== Dashboard JS ==========
 
-// Apply design preset - auto-fills theme, shape, card, font, color
-function applyPreset(el) {
-    const d = el.dataset;
-    // Theme
-    const themeRadio = document.querySelector('input[name="theme_style"][value="' + d.theme + '"]');
-    if (themeRadio) themeRadio.checked = true;
-    // Button shape
-    const shapeRadio = document.querySelector('input[name="button_shape"][value="' + d.shape + '"]');
-    if (shapeRadio) shapeRadio.checked = true;
-    // Card style
-    const cardSelect = document.querySelector('select[name="card_style"]');
-    if (cardSelect) cardSelect.value = d.card;
-    // Font family
-    const fontSelect = document.querySelector('select[name="font_family"]');
-    if (fontSelect) fontSelect.value = d.font;
-    // Font size
-    const sizeSelect = document.querySelector('select[name="font_size"]');
-    if (sizeSelect) sizeSelect.value = d.fontsize;
-    // Color
-    const colorInput = document.querySelector('input[name="theme_color"]');
-    if (colorInput) colorInput.value = d.color;
-    // Highlight active preset
+// Preset data for previews
+const presetPreviews = {
+    1: {
+        name: 'كلاسيكي',
+        theme: 'dark', bg: '#0a0a0a', text: '#fff',
+        shape: 'rounded', font: 'Tajawal',
+        links: [
+            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#25D366', size: 'full' },
+            { title: 'انستقرام', icon: 'fab fa-instagram', color: '#E1306C', size: 'half' },
+            { title: 'تويتر', icon: 'fab fa-x-twitter', color: '#1DA1F2', size: 'half' },
+            { title: 'المتجر', icon: 'fas fa-store', color: '#8B5CF6', size: 'full', gradient: 'linear-gradient(135deg,#8B5CF6,#6D28D9)' },
+            { title: 'تيك توك', icon: 'fab fa-tiktok', color: '#111', size: 'full' },
+        ]
+    },
+    2: {
+        name: 'عصري',
+        theme: 'light', bg: '#f5f5f7', text: '#1a1a2e',
+        shape: 'pill', font: 'Cairo',
+        links: [
+            { title: 'الموقع الرسمي', icon: 'fas fa-globe', color: '#3b82f6', size: 'full', gradient: 'linear-gradient(135deg,#3b82f6,#06b6d4)' },
+            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#10b981', size: 'full' },
+            { title: 'انستقرام', icon: 'fab fa-instagram', color: '#ec4899', size: 'full' },
+            { title: 'موقعنا', icon: 'fas fa-map-marker-alt', color: '#f59e0b', size: 'full' },
+            { title: 'اتصل بنا', icon: 'fas fa-phone', color: '#3b82f6', size: 'full' },
+        ]
+    },
+    3: {
+        name: 'أنيق',
+        theme: 'ocean', bg: 'linear-gradient(135deg,#0c4a6e,#164e63)', text: '#e0f2fe',
+        shape: 'square', font: 'Almarai',
+        links: [
+            { title: 'تسوق الآن', icon: 'fas fa-shopping-cart', color: '#06b6d4', size: 'full', gradient: 'linear-gradient(135deg,#06b6d4,#0284c7)' },
+            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#0ea5e9', size: 'half' },
+            { title: 'تيليجرام', icon: 'fab fa-telegram-plane', color: '#22d3ee', size: 'half' },
+            { title: 'يوتيوب', icon: 'fab fa-youtube', color: '#0284c7', size: 'full' },
+            { title: 'البريد', icon: 'fas fa-envelope', color: '#67e8f9', size: 'full' },
+        ]
+    },
+    4: {
+        name: 'جريء',
+        theme: 'sunset', bg: 'linear-gradient(135deg,#451a03,#7c2d12)', text: '#fff7ed',
+        shape: 'circle', font: 'Changa',
+        links: [
+            { title: 'سناب شات', icon: 'fab fa-snapchat-ghost', color: '#f59e0b', size: 'third' },
+            { title: 'انستقرام', icon: 'fab fa-instagram', color: '#ef4444', size: 'third' },
+            { title: 'تيك توك', icon: 'fab fa-tiktok', color: '#f97316', size: 'third' },
+            { title: 'تسوق الآن', icon: 'fas fa-store', color: '#fbbf24', size: 'full', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#f59e0b', size: 'full' },
+        ]
+    }
+};
+
+// Apply preset: calls API to set theme + create links, then reloads
+async function applyPreset(presetNum, el) {
+    if (!confirm('سيتم تطبيق التصميم وإضافة أزرار جاهزة. الروابط الحالية ستُستبدل. متأكد؟')) return;
+
     document.querySelectorAll('.design-preset').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    showToast('تم تطبيق التصميم - اضغط حفظ');
+    if (el) el.classList.add('active');
+
+    showToast('جاري تطبيق التصميم...');
+    try {
+        const res = await fetch('/api/preset/apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preset: presetNum })
+        });
+        if (res.ok) {
+            showToast('تم تطبيق التصميم بنجاح!');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            showToast('حدث خطأ في تطبيق التصميم');
+        }
+    } catch(e) {
+        showToast('حدث خطأ في الاتصال');
+    }
+}
+
+// Preview preset in modal
+function previewPreset(presetNum) {
+    const p = presetPreviews[presetNum];
+    if (!p) return;
+
+    const shapeRadius = { rounded: '12px', pill: '50px', square: '4px', circle: '50%' };
+    const radius = shapeRadius[p.shape] || '12px';
+
+    let linksHtml = '';
+    let i = 0;
+    while (i < p.links.length) {
+        const link = p.links[i];
+        if (link.size === 'half' && p.links[i+1] && p.links[i+1].size === 'half') {
+            linksHtml += '<div style="display:flex;gap:8px">';
+            [p.links[i], p.links[i+1]].forEach(l => {
+                const bg = l.gradient || l.color;
+                linksHtml += `<div style="flex:1;padding:12px;border-radius:${radius};background:${bg};color:#fff;text-align:center;font-family:${p.font},sans-serif;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px"><i class="${l.icon}"></i> ${l.title}</div>`;
+            });
+            linksHtml += '</div>';
+            i += 2;
+        } else if (link.size === 'third' && p.links[i+1] && p.links[i+1].size === 'third' && p.links[i+2] && p.links[i+2].size === 'third') {
+            linksHtml += '<div style="display:flex;gap:8px">';
+            [p.links[i], p.links[i+1], p.links[i+2]].forEach(l => {
+                const bg = l.gradient || l.color;
+                linksHtml += `<div style="flex:1;padding:12px 6px;border-radius:${radius};background:${bg};color:#fff;text-align:center;font-size:20px;display:flex;align-items:center;justify-content:center"><i class="${l.icon}"></i></div>`;
+            });
+            linksHtml += '</div>';
+            i += 3;
+        } else {
+            const bg = link.gradient || link.color;
+            linksHtml += `<div style="padding:14px;border-radius:${radius};background:${bg};color:#fff;text-align:center;font-family:${p.font},sans-serif;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px"><i class="${link.icon}"></i> ${link.title}</div>`;
+            i++;
+        }
+    }
+
+    const body = document.getElementById('preset-preview-body');
+    body.innerHTML = `
+        <div class="preset-phone" style="background:${p.bg};color:${p.text};font-family:${p.font},sans-serif">
+            <div style="text-align:center;padding:24px 16px 16px">
+                <div style="width:60px;height:60px;border-radius:50%;background:${p.links[0].color};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff"><i class="fas fa-store"></i></div>
+                <h3 style="font-size:18px;margin-bottom:4px">اسم المتجر</h3>
+                <p style="font-size:12px;opacity:0.6">وصف المتجر</p>
+            </div>
+            <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:8px">
+                ${linksHtml}
+            </div>
+        </div>
+    `;
+
+    // Set apply button
+    const applyBtn = document.getElementById('preset-apply-btn');
+    applyBtn.onclick = () => {
+        closeModal('preset-preview-modal');
+        applyPreset(presetNum, document.querySelector('.design-preset[data-preset="'+presetNum+'"]'));
+    };
+
+    document.getElementById('preset-preview-modal').classList.add('show');
 }
 
 // Sidebar toggle (mobile)
