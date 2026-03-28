@@ -67,6 +67,14 @@ body {
 .btn-lg { padding: 16px 32px; font-size: 16px; }
 .btn-sm { padding: 8px 18px; font-size: 13px; }
 
+.btn-ghost {
+    background: transparent;
+    color: #888;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.btn-ghost:hover { color: var(--primary); }
+
 /* ========== Forms ========== */
 .form-group {
     margin-bottom: 18px;
@@ -202,9 +210,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 14px 16px;
     max-width: 1200px;
     margin: 0 auto;
+    gap: 8px;
 }
 
 .nav-brand {
@@ -212,11 +221,14 @@ body {
     font-weight: 800;
     color: var(--primary);
     flex-shrink: 0;
+    text-decoration: none;
 }
 
 .nav-links {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .hero {
@@ -349,9 +361,66 @@ body {
     .hero-features { grid-template-columns: repeat(4, 1fr); gap: 20px; }
 }
 
-@media (max-width: 400px) {
-    .nav-links .btn { padding: 8px 12px; font-size: 12px; }
-    .hero h1 { font-size: 26px; }
+@media (max-width: 460px) {
+    .landing-nav { padding: 10px 12px; }
+    .nav-brand { font-size: 17px; }
+    .nav-links { gap: 4px; }
+    .nav-links .btn-sm { padding: 6px 10px; font-size: 11px; }
+    .nav-links .btn-ghost { padding: 6px 8px; font-size: 11px; }
+
+    .hero { padding: 30px 14px 20px; }
+    .hero h1 { font-size: 24px; }
+    .hero p { font-size: 13px; margin-bottom: 20px; padding: 0; }
+    .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 14px; }
+    .hero-buttons .btn-lg { padding: 12px 24px; font-size: 14px; }
+
+    .hero-features { gap: 8px; margin-top: 24px; padding: 0 6px; }
+    .feature { padding: 14px 8px; font-size: 11px; }
+    .feature i { font-size: 20px; width: 40px; height: 40px; border-radius: 10px; }
+
+    .steps-section { margin-top: 40px; }
+    .steps-section h2 { font-size: 22px; margin-bottom: 20px; }
+    .step-card { padding: 18px 12px; }
+    .step-card h3 { font-size: 14px; }
+    .step-card p { font-size: 12px; }
+
+    .featured-section { margin-top: 40px; }
+    .featured-section h2 { font-size: 20px; }
+    .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .featured-card { padding: 14px 8px; }
+
+    .faq-section { margin-top: 40px; }
+    .faq-section h2 { font-size: 20px; }
+    .faq-item summary { padding: 12px 14px; font-size: 13px; }
+    .faq-item p { padding: 0 14px 12px; font-size: 12px; }
+
+    .landing-footer { margin-top: 40px; padding: 30px 14px 20px; }
+
+    .directory-page { padding: 14px; }
+    .directory-header { padding: 20px 0; }
+    .directory-header h1 { font-size: 22px; }
+    .directory-header p { font-size: 13px; margin-bottom: 14px; }
+    .search-box input { padding: 10px 12px; font-size: 13px; }
+    .search-box button { padding: 10px 16px; }
+    .directory-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .merchant-card { padding: 14px 10px; border-radius: 12px; }
+    .merchant-card img { width: 50px; height: 50px; margin-bottom: 8px; }
+    .merchant-card .mc-placeholder { width: 50px; height: 50px; font-size: 18px; margin-bottom: 8px; }
+    .merchant-card strong { font-size: 13px; }
+    .merchant-card small { font-size: 11px; }
+
+    .whatsapp-fab { width: 48px; height: 48px; font-size: 22px; bottom: 16px; left: 16px; }
+}
+
+@media (max-width: 360px) {
+    .nav-links .btn-sm { padding: 5px 8px; font-size: 10px; }
+    .nav-links .btn-ghost { padding: 5px 6px; font-size: 10px; }
+    .hero h1 { font-size: 22px; }
+    .directory-grid { grid-template-columns: 1fr; }
 }
 
 /* ========== Hero Badge ========== */
@@ -592,5 +661,5 @@ body {
 @media (max-width: 600px) {
     .steps-grid { grid-template-columns: 1fr; }
     .featured-grid { grid-template-columns: repeat(2, 1fr); }
-    .directory-grid { grid-template-columns: repeat(2, 1fr); }
+    .directory-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }

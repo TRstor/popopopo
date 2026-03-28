@@ -11,17 +11,17 @@
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="logo"><i class="fas fa-link"></i> Link<span>in1</span></a>
+    <nav class="landing-nav">
         <div class="nav-links">
-            <a href="/directory" class="btn btn-outline" style="border-color:#8B5CF6;color:#8B5CF6">دليل التجار</a>
             <% if (typeof user !== 'undefined' && user) { %>
-                <a href="/dashboard" class="btn btn-primary">لوحة التحكم</a>
+                <a href="/dashboard" class="btn btn-primary btn-sm">لوحة التحكم</a>
             <% } else { %>
-                <a href="/login" class="btn btn-outline">تسجيل دخول</a>
-                <a href="/register" class="btn btn-primary">إنشاء صفحة</a>
+                <a href="/register" class="btn btn-primary btn-sm">إنشاء صفحة</a>
+                <a href="/login" class="btn btn-outline btn-sm">تسجيل دخول</a>
             <% } %>
+            <a href="/directory" class="btn btn-ghost btn-sm">دليل التجار</a>
         </div>
+        <a href="/" class="nav-brand"><i class="fas fa-link"></i> Linkin1</a>
     </nav>
 
     <div class="directory-page">
