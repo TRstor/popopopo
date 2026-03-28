@@ -235,37 +235,86 @@
                     </div>
 
                     <div class="form-group">
-                        <label>اختر التصميم</label>
-                        <div class="device-theme-picker">
-                            <% const themes = [
-                                {v:'dark',n:'داكن',bg:'#0a0a0a',cardBg:'#1a1a2e',accent:'#8B5CF6',text:'#fff',btnColors:['#8B5CF6','#25D366','#E1306C','#1DA1F2']},
-                                {v:'light',n:'فاتح',bg:'#f5f5f7',cardBg:'#ffffff',accent:'#8B5CF6',text:'#1a1a2e',btnColors:['#8B5CF6','#10b981','#f59e0b','#3b82f6']},
-                                {v:'ocean',n:'محيط',bg:'linear-gradient(135deg,#0c4a6e,#164e63)',cardBg:'rgba(255,255,255,0.08)',accent:'#06b6d4',text:'#e0f2fe',btnColors:['#06b6d4','#0ea5e9','#22d3ee','#67e8f9']},
-                                {v:'sunset',n:'غروب',bg:'linear-gradient(135deg,#451a03,#7c2d12)',cardBg:'rgba(255,255,255,0.06)',accent:'#f59e0b',text:'#fff7ed',btnColors:['#f59e0b','#ef4444','#f97316','#fbbf24']}
-                            ]; %>
-                            <% themes.forEach(t => { %>
-                            <label class="device-theme-option">
-                                <input type="radio" name="theme_style" value="<%= t.v %>" <%= (merchant.theme_style || 'dark') === t.v ? 'checked' : '' %>>
-                                <div class="device-mockup-card">
-                                    <div class="device-frame" style="background:<%= t.bg %>">
-                                        <div class="dm-notch"></div>
-                                        <div class="dm-avatar" style="background:<%= t.accent %>"></div>
-                                        <div class="dm-name" style="background:<%= t.text %>;opacity:0.8"></div>
-                                        <div class="dm-buttons">
-                                            <% t.btnColors.forEach(c => { %>
-                                            <div class="dm-btn" style="background:<%= c %>"></div>
-                                            <% }) %>
+                        <label>اختر تصميم جاهز</label>
+                        <div class="design-presets">
+                            <!-- Preset 1: Classic Dark -->
+                            <div class="design-preset" data-preset="1" data-theme="dark" data-shape="rounded" data-card="default" data-font="Tajawal" data-fontsize="medium" data-color="#8B5CF6" onclick="applyPreset(this)">
+                                <div class="preset-device" style="background:#0a0a0a">
+                                    <div class="pd-notch"></div>
+                                    <div class="pd-avatar" style="background:#8B5CF6"></div>
+                                    <div class="pd-name" style="background:rgba(255,255,255,0.7)"></div>
+                                    <div class="pd-buttons">
+                                        <div class="pd-btn" style="background:#8B5CF6;border-radius:10px"></div>
+                                        <div class="pd-btn" style="background:#25D366;border-radius:10px"></div>
+                                        <div class="pd-btn-row">
+                                            <div class="pd-btn-half" style="background:#E1306C;border-radius:10px"></div>
+                                            <div class="pd-btn-half" style="background:#1DA1F2;border-radius:10px"></div>
                                         </div>
+                                        <div class="pd-btn" style="background:#6D28D9;border-radius:10px"></div>
                                     </div>
-                                    <span class="device-theme-label"><%= t.n %></span>
                                 </div>
-                            </label>
-                            <% }) %>
+                                <span class="preset-label">كلاسيكي</span>
+                            </div>
+                            <!-- Preset 2: Modern Light -->
+                            <div class="design-preset" data-preset="2" data-theme="light" data-shape="pill" data-card="glass" data-font="Cairo" data-fontsize="medium" data-color="#3b82f6" onclick="applyPreset(this)">
+                                <div class="preset-device" style="background:#f5f5f7">
+                                    <div class="pd-notch" style="background:rgba(0,0,0,0.1)"></div>
+                                    <div class="pd-avatar" style="background:#3b82f6"></div>
+                                    <div class="pd-name" style="background:rgba(0,0,0,0.5)"></div>
+                                    <div class="pd-buttons">
+                                        <div class="pd-btn" style="background:#3b82f6;border-radius:20px"></div>
+                                        <div class="pd-btn" style="background:#10b981;border-radius:20px"></div>
+                                        <div class="pd-btn" style="background:#f59e0b;border-radius:20px"></div>
+                                        <div class="pd-btn" style="background:#ec4899;border-radius:20px"></div>
+                                    </div>
+                                </div>
+                                <span class="preset-label">عصري</span>
+                            </div>
+                            <!-- Preset 3: Elegant Ocean -->
+                            <div class="design-preset" data-preset="3" data-theme="ocean" data-shape="square" data-card="shadow" data-font="Almarai" data-fontsize="large" data-color="#06b6d4" onclick="applyPreset(this)">
+                                <div class="preset-device" style="background:linear-gradient(135deg,#0c4a6e,#164e63)">
+                                    <div class="pd-notch" style="background:rgba(255,255,255,0.15)"></div>
+                                    <div class="pd-avatar" style="background:#06b6d4"></div>
+                                    <div class="pd-name" style="background:rgba(255,255,255,0.6)"></div>
+                                    <div class="pd-buttons">
+                                        <div class="pd-btn" style="background:#06b6d4;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                        <div class="pd-btn-row">
+                                            <div class="pd-btn-half" style="background:#0ea5e9;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                            <div class="pd-btn-half" style="background:#22d3ee;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                        </div>
+                                        <div class="pd-btn" style="background:#0284c7;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                        <div class="pd-btn" style="background:#67e8f9;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+                                    </div>
+                                </div>
+                                <span class="preset-label">أنيق</span>
+                            </div>
+                            <!-- Preset 4: Bold Sunset -->
+                            <div class="design-preset" data-preset="4" data-theme="sunset" data-shape="circle" data-card="bordered" data-font="Changa" data-fontsize="large" data-color="#f59e0b" onclick="applyPreset(this)">
+                                <div class="preset-device" style="background:linear-gradient(135deg,#451a03,#7c2d12)">
+                                    <div class="pd-notch" style="background:rgba(255,255,255,0.15)"></div>
+                                    <div class="pd-avatar" style="background:#f59e0b"></div>
+                                    <div class="pd-name" style="background:rgba(255,255,255,0.6)"></div>
+                                    <div class="pd-buttons">
+                                        <div class="pd-btn-row">
+                                            <div class="pd-btn-circle" style="background:#f59e0b"></div>
+                                            <div class="pd-btn-circle" style="background:#ef4444"></div>
+                                            <div class="pd-btn-circle" style="background:#f97316"></div>
+                                        </div>
+                                        <div class="pd-btn" style="background:#fbbf24;border-radius:50px;border:2px solid rgba(255,255,255,0.2)"></div>
+                                        <div class="pd-btn" style="background:#f59e0b;border-radius:50px;border:2px solid rgba(255,255,255,0.2)"></div>
+                                    </div>
+                                </div>
+                                <span class="preset-label">جريء</span>
+                            </div>
                         </div>
-                        <p class="form-hint">المزيد من الثيمات:</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ثيم الألوان</label>
                         <div class="extra-themes-row">
                             <% const extraThemes = [
-                                {v:'blue',n:'أزرق'},{v:'pink',n:'وردي'},{v:'emerald',n:'زمردي'},{v:'rose',n:'روز'},
+                                {v:'dark',n:'داكن'},{v:'light',n:'فاتح'},{v:'blue',n:'أزرق'},{v:'pink',n:'وردي'},
+                                {v:'emerald',n:'زمردي'},{v:'sunset',n:'غروب'},{v:'ocean',n:'محيط'},{v:'rose',n:'روز'},
                                 {v:'midnight',n:'ليلي'},{v:'coffee',n:'قهوة'},{v:'forest',n:'غابة'},{v:'lavender',n:'لافندر'},
                                 {v:'cherry',n:'كرزي'},{v:'arctic',n:'قطبي'}
                             ]; %>

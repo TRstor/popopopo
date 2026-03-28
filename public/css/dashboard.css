@@ -355,23 +355,16 @@
 }
 
 /* ========== Theme Picker ========== */
-/* Device Mockup Theme Picker */
-.device-theme-picker {
+/* Design Presets (4 device mockups) */
+.design-presets {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
-.device-theme-option {
+.design-preset {
     cursor: pointer;
-}
-
-.device-theme-option input[type="radio"] {
-    display: none;
-}
-
-.device-mockup-card {
     border: 2px solid #2a2a4a;
     border-radius: 14px;
     overflow: hidden;
@@ -379,61 +372,82 @@
     text-align: center;
 }
 
-.device-theme-option input[type="radio"]:checked + .device-mockup-card {
-    border-color: #8B5CF6;
-    box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
-    transform: scale(1.03);
-}
-
-.device-theme-option:hover .device-mockup-card {
+.design-preset:hover {
     border-color: #555;
 }
 
-.device-frame {
-    padding: 10px 8px 12px;
+.design-preset.active {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
+    transform: scale(1.03);
+}
+
+.preset-device {
+    padding: 10px 8px 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    min-height: 130px;
-    position: relative;
+    gap: 5px;
+    min-height: 140px;
 }
 
-.dm-notch {
-    width: 30px;
+.pd-notch {
+    width: 28px;
     height: 4px;
     border-radius: 4px;
     background: rgba(255,255,255,0.15);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
-.dm-avatar {
-    width: 22px;
-    height: 22px;
+.pd-avatar {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
 }
 
-.dm-name {
-    width: 40px;
+.pd-name {
+    width: 36px;
     height: 4px;
     border-radius: 2px;
+    margin-bottom: 2px;
 }
 
-.dm-buttons {
+.pd-buttons {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    width: 85%;
-    margin-top: 4px;
+    width: 88%;
 }
 
-.dm-btn {
+.pd-btn {
     height: 9px;
-    border-radius: 5px;
     width: 100%;
 }
 
-.device-theme-label {
+.pd-btn-row {
+    display: flex;
+    gap: 4px;
+}
+
+.pd-btn-half {
+    height: 9px;
+    flex: 1;
+}
+
+.pd-btn-circle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.pd-btn-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.preset-label {
     display: block;
     padding: 6px 4px;
     font-size: 11px;
@@ -442,12 +456,11 @@
     background: #12122a;
 }
 
-/* Extra Themes Row (smaller) */
+/* Extra Themes Row */
 .extra-themes-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    margin-top: 8px;
 }
 
 /* Old theme-picker styles kept for extra themes */
@@ -792,8 +805,8 @@
     .size-picker { gap: 6px; }
 
     .theme-picker { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .device-theme-picker { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .extra-themes-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .design-presets { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .extra-themes-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
 
     .settings-form { max-width: 100%; }
 }

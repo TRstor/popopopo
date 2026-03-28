@@ -1,5 +1,32 @@
 // ========== Dashboard JS ==========
 
+// Apply design preset - auto-fills theme, shape, card, font, color
+function applyPreset(el) {
+    const d = el.dataset;
+    // Theme
+    const themeRadio = document.querySelector('input[name="theme_style"][value="' + d.theme + '"]');
+    if (themeRadio) themeRadio.checked = true;
+    // Button shape
+    const shapeRadio = document.querySelector('input[name="button_shape"][value="' + d.shape + '"]');
+    if (shapeRadio) shapeRadio.checked = true;
+    // Card style
+    const cardSelect = document.querySelector('select[name="card_style"]');
+    if (cardSelect) cardSelect.value = d.card;
+    // Font family
+    const fontSelect = document.querySelector('select[name="font_family"]');
+    if (fontSelect) fontSelect.value = d.font;
+    // Font size
+    const sizeSelect = document.querySelector('select[name="font_size"]');
+    if (sizeSelect) sizeSelect.value = d.fontsize;
+    // Color
+    const colorInput = document.querySelector('input[name="theme_color"]');
+    if (colorInput) colorInput.value = d.color;
+    // Highlight active preset
+    document.querySelectorAll('.design-preset').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    showToast('تم تطبيق التصميم - اضغط حفظ');
+}
+
 // Sidebar toggle (mobile)
 function toggleSidebar() {
     document.getElementById('sidebar').classList.add('open');
