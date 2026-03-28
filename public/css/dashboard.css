@@ -839,14 +839,33 @@
     .settings-form { max-width: 100%; }
 }
 
+@media (max-width: 480px) {
+    .link-card {
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+
+    .link-actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 6px;
+        border-top: 1px solid #2a2a4a;
+        margin-top: 4px;
+    }
+
+    .drag-handle {
+        order: -1;
+    }
+
+    .link-size-badge { display: none; }
+}
+
 @media (max-width: 400px) {
     .topbar h2 { display: none; }
     
     .profile-url {
         flex: 1;
     }
-
-    .link-size-badge { display: none; }
 }
 
 /* ========== Preview FAB (mobile) ========== */

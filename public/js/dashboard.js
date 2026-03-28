@@ -39,15 +39,15 @@ const presetPreviews = {
         ]
     },
     4: {
-        name: 'جريء',
-        theme: 'sunset', bg: 'linear-gradient(135deg,#451a03,#7c2d12)', text: '#fff7ed',
-        shape: 'circle', font: 'Changa',
+        name: 'نيون',
+        theme: 'midnight', bg: '#0f172a', text: '#e2e8f0',
+        shape: 'pill', font: 'Changa',
         links: [
-            { title: 'سناب شات', icon: 'fab fa-snapchat-ghost', color: '#f59e0b', size: 'third' },
-            { title: 'انستقرام', icon: 'fab fa-instagram', color: '#ef4444', size: 'third' },
-            { title: 'تيك توك', icon: 'fab fa-tiktok', color: '#f97316', size: 'third' },
-            { title: 'تسوق الآن', icon: 'fas fa-store', color: '#fbbf24', size: 'full', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#f59e0b', size: 'full' },
+            { title: 'انستقرام', icon: 'fab fa-instagram', color: '#ec4899', size: 'full', gradient: 'linear-gradient(135deg,#ec4899,#8B5CF6)' },
+            { title: 'تيك توك', icon: 'fab fa-tiktok', color: '#22d3ee', size: 'half' },
+            { title: 'سناب شات', icon: 'fab fa-snapchat-ghost', color: '#a3e635', size: 'half' },
+            { title: 'واتساب', icon: 'fab fa-whatsapp', color: '#10b981', size: 'full', gradient: 'linear-gradient(135deg,#10b981,#22d3ee)' },
+            { title: 'المتجر', icon: 'fas fa-store', color: '#8B5CF6', size: 'full' },
         ]
     }
 };

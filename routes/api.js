@@ -80,14 +80,14 @@ router.post('/preset/apply', requireAuth, (req, res) => {
             ]
         },
         4: {
-            theme_style: 'sunset', button_shape: 'circle', card_style: 'bordered',
-            font_family: 'Changa', font_size: 'large', theme_color: '#f59e0b',
+            theme_style: 'midnight', button_shape: 'pill', card_style: 'glass',
+            font_family: 'Changa', font_size: 'medium', theme_color: '#22d3ee',
             links: [
-                { title: 'سناب شات', url: 'https://snapchat.com/', icon: 'fab fa-snapchat-ghost', color: '#f59e0b', size: 'third', gradient: '' },
-                { title: 'انستقرام', url: 'https://instagram.com/', icon: 'fab fa-instagram', color: '#ef4444', size: 'third', gradient: '' },
-                { title: 'تيك توك', url: 'https://tiktok.com/', icon: 'fab fa-tiktok', color: '#f97316', size: 'third', gradient: '' },
-                { title: 'تسوق الآن', url: 'https://', icon: 'fas fa-store', color: '#fbbf24', size: 'full', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-                { title: 'واتساب', url: 'https://wa.me/', icon: 'fab fa-whatsapp', color: '#f59e0b', size: 'full', gradient: '' },
+                { title: 'انستقرام', url: 'https://instagram.com/', icon: 'fab fa-instagram', color: '#ec4899', size: 'full', gradient: 'linear-gradient(135deg,#ec4899,#8B5CF6)' },
+                { title: 'تيك توك', url: 'https://tiktok.com/', icon: 'fab fa-tiktok', color: '#22d3ee', size: 'half', gradient: '' },
+                { title: 'سناب شات', url: 'https://snapchat.com/', icon: 'fab fa-snapchat-ghost', color: '#a3e635', size: 'half', gradient: '' },
+                { title: 'واتساب', url: 'https://wa.me/', icon: 'fab fa-whatsapp', color: '#10b981', size: 'full', gradient: 'linear-gradient(135deg,#10b981,#22d3ee)' },
+                { title: 'المتجر', url: 'https://', icon: 'fas fa-store', color: '#8B5CF6', size: 'full', gradient: '' },
             ]
         }
     };
