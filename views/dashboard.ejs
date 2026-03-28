@@ -205,17 +205,6 @@
                                 <input type="file" name="cover_image" accept="image/*">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>صورة الخلفية</label>
-                            <div class="profile-upload">
-                                <% if (merchant.bg_image) { %>
-                                    <img src="<%= merchant.bg_image %>" alt="BG" class="current-avatar" style="border-radius:8px;width:100px;height:50px">
-                                <% } else { %>
-                                    <div class="avatar-placeholder" style="border-radius:8px;width:100px;height:50px;font-size:16px"><i class="fas fa-panorama"></i></div>
-                                <% } %>
-                                <input type="file" name="bg_image" accept="image/*">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="form-group">
@@ -246,15 +235,41 @@
                     </div>
 
                     <div class="form-group">
-                        <label>ثيم الصفحة</label>
-                        <div class="theme-picker">
+                        <label>اختر التصميم</label>
+                        <div class="device-theme-picker">
                             <% const themes = [
-                                {v:'dark',n:'داكن'},{v:'light',n:'فاتح'},{v:'blue',n:'أزرق'},{v:'pink',n:'وردي'},
-                                {v:'emerald',n:'زمردي'},{v:'sunset',n:'غروب'},{v:'ocean',n:'محيط'},{v:'rose',n:'روز'},
+                                {v:'dark',n:'داكن',bg:'#0a0a0a',cardBg:'#1a1a2e',accent:'#8B5CF6',text:'#fff',btnColors:['#8B5CF6','#25D366','#E1306C','#1DA1F2']},
+                                {v:'light',n:'فاتح',bg:'#f5f5f7',cardBg:'#ffffff',accent:'#8B5CF6',text:'#1a1a2e',btnColors:['#8B5CF6','#10b981','#f59e0b','#3b82f6']},
+                                {v:'ocean',n:'محيط',bg:'linear-gradient(135deg,#0c4a6e,#164e63)',cardBg:'rgba(255,255,255,0.08)',accent:'#06b6d4',text:'#e0f2fe',btnColors:['#06b6d4','#0ea5e9','#22d3ee','#67e8f9']},
+                                {v:'sunset',n:'غروب',bg:'linear-gradient(135deg,#451a03,#7c2d12)',cardBg:'rgba(255,255,255,0.06)',accent:'#f59e0b',text:'#fff7ed',btnColors:['#f59e0b','#ef4444','#f97316','#fbbf24']}
+                            ]; %>
+                            <% themes.forEach(t => { %>
+                            <label class="device-theme-option">
+                                <input type="radio" name="theme_style" value="<%= t.v %>" <%= (merchant.theme_style || 'dark') === t.v ? 'checked' : '' %>>
+                                <div class="device-mockup-card">
+                                    <div class="device-frame" style="background:<%= t.bg %>">
+                                        <div class="dm-notch"></div>
+                                        <div class="dm-avatar" style="background:<%= t.accent %>"></div>
+                                        <div class="dm-name" style="background:<%= t.text %>;opacity:0.8"></div>
+                                        <div class="dm-buttons">
+                                            <% t.btnColors.forEach(c => { %>
+                                            <div class="dm-btn" style="background:<%= c %>"></div>
+                                            <% }) %>
+                                        </div>
+                                    </div>
+                                    <span class="device-theme-label"><%= t.n %></span>
+                                </div>
+                            </label>
+                            <% }) %>
+                        </div>
+                        <p class="form-hint">المزيد من الثيمات:</p>
+                        <div class="extra-themes-row">
+                            <% const extraThemes = [
+                                {v:'blue',n:'أزرق'},{v:'pink',n:'وردي'},{v:'emerald',n:'زمردي'},{v:'rose',n:'روز'},
                                 {v:'midnight',n:'ليلي'},{v:'coffee',n:'قهوة'},{v:'forest',n:'غابة'},{v:'lavender',n:'لافندر'},
                                 {v:'cherry',n:'كرزي'},{v:'arctic',n:'قطبي'}
                             ]; %>
-                            <% themes.forEach(t => { %>
+                            <% extraThemes.forEach(t => { %>
                             <label class="theme-option">
                                 <input type="radio" name="theme_style" value="<%= t.v %>" <%= (merchant.theme_style || 'dark') === t.v ? 'checked' : '' %>>
                                 <div class="theme-preview theme-<%= t.v %>">

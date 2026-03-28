@@ -355,6 +355,102 @@
 }
 
 /* ========== Theme Picker ========== */
+/* Device Mockup Theme Picker */
+.device-theme-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.device-theme-option {
+    cursor: pointer;
+}
+
+.device-theme-option input[type="radio"] {
+    display: none;
+}
+
+.device-mockup-card {
+    border: 2px solid #2a2a4a;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    text-align: center;
+}
+
+.device-theme-option input[type="radio"]:checked + .device-mockup-card {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+    transform: scale(1.03);
+}
+
+.device-theme-option:hover .device-mockup-card {
+    border-color: #555;
+}
+
+.device-frame {
+    padding: 10px 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 130px;
+    position: relative;
+}
+
+.dm-notch {
+    width: 30px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.15);
+    margin-bottom: 4px;
+}
+
+.dm-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.dm-name {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.dm-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 85%;
+    margin-top: 4px;
+}
+
+.dm-btn {
+    height: 9px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.device-theme-label {
+    display: block;
+    padding: 6px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #aaa;
+    background: #12122a;
+}
+
+/* Extra Themes Row (smaller) */
+.extra-themes-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* Old theme-picker styles kept for extra themes */
 .theme-picker {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -696,6 +792,8 @@
     .size-picker { gap: 6px; }
 
     .theme-picker { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .device-theme-picker { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .extra-themes-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
 
     .settings-form { max-width: 100%; }
 }
