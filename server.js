@@ -68,7 +68,7 @@ app.get('/directory', (req, res) => {
 
 // Public profile page - must be last
 app.get('/:username', (req, res) => {
-    const username = req.params.username;
+    const username = req.params.username.toLowerCase();
     const merchant = db.prepare('SELECT * FROM merchants WHERE username = ? AND is_banned = 0').get(username);
 
     if (!merchant) {
@@ -136,6 +136,7 @@ db.exec(`
         section_id INTEGER DEFAULT 0,
         sort_order INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
+        click_count INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
     );
@@ -198,6 +199,7 @@ const migrations = [
     { table: 'links', col: 'gradient', sql: "ALTER TABLE links ADD COLUMN gradient TEXT DEFAULT ''" },
     { table: 'links', col: 'countdown_date', sql: "ALTER TABLE links ADD COLUMN countdown_date TEXT DEFAULT ''" },
     { table: 'links', col: 'section_id', sql: "ALTER TABLE links ADD COLUMN section_id INTEGER DEFAULT 0" },
+    { table: 'links', col: 'click_count', sql: "ALTER TABLE links ADD COLUMN click_count INTEGER DEFAULT 0" },
 ];
 
 migrations.forEach(m => {

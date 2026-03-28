@@ -62,6 +62,12 @@ router.post('/settings', upload.fields([
     params.push(userId);
     db.prepare(query).run(...params);
     req.session.user.store_name = store_name;
+    req.session.user.theme_style = style;
+    req.session.user.theme_color = theme_color || '#8B5CF6';
+    req.session.user.button_shape = shape;
+    req.session.user.font_family = font;
+    req.session.user.font_size = size;
+    req.session.user.card_style = card;
     res.redirect('/dashboard?msg=saved');
 });
 

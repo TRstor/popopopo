@@ -112,6 +112,13 @@ router.post('/preset/apply', requireAuth, (req, res) => {
 
     try {
         applyTransaction();
+        // Update session with new theme settings
+        req.session.user.theme_style = p.theme_style;
+        req.session.user.theme_color = p.theme_color;
+        req.session.user.button_shape = p.button_shape;
+        req.session.user.font_family = p.font_family;
+        req.session.user.font_size = p.font_size;
+        req.session.user.card_style = p.card_style;
         res.json({ success: true });
     } catch(err) {
         res.status(500).json({ error: 'حدث خطأ' });
