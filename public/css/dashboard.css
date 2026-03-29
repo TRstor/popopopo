@@ -692,6 +692,15 @@
     border: 1px solid #2a2a4a;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal textarea,
+.modal input[type="url"],
+.modal input[type="text"],
+.modal input[type="number"] {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .modal-header {
