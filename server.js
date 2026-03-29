@@ -187,6 +187,9 @@ db.exec(`
         old_price REAL DEFAULT 0,
         image TEXT DEFAULT '',
         salla_url TEXT DEFAULT '',
+        salla_store_id TEXT DEFAULT '',
+        salla_product_id TEXT DEFAULT '',
+        salla_label TEXT DEFAULT '',
         sort_order INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -216,6 +219,9 @@ const migrations = [
     { table: 'links', col: 'countdown_date', sql: "ALTER TABLE links ADD COLUMN countdown_date TEXT DEFAULT ''" },
     { table: 'links', col: 'section_id', sql: "ALTER TABLE links ADD COLUMN section_id INTEGER DEFAULT 0" },
     { table: 'links', col: 'click_count', sql: "ALTER TABLE links ADD COLUMN click_count INTEGER DEFAULT 0" },
+    { table: 'products', col: 'salla_store_id', sql: "ALTER TABLE products ADD COLUMN salla_store_id TEXT DEFAULT ''" },
+    { table: 'products', col: 'salla_product_id', sql: "ALTER TABLE products ADD COLUMN salla_product_id TEXT DEFAULT ''" },
+    { table: 'products', col: 'salla_label', sql: "ALTER TABLE products ADD COLUMN salla_label TEXT DEFAULT ''" },
 ];
 
 migrations.forEach(m => {

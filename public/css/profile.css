@@ -496,6 +496,16 @@ body {
     transform: scale(0.97);
 }
 
+.salla-widget-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.salla-widget-wrap salla-mini-checkout-widget {
+    width: 100%;
+}
+
 @media (max-width: 360px) {
     .products-grid {
         grid-template-columns: 1fr;

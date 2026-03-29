@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/profile.css">
     <link rel="stylesheet" href="/css/theme-<%= merchant.theme_style || 'dark' %>.css">
+    <% const hasSallaWidget = (products || []).some(p => p.salla_store_id && p.salla_product_id); %>
+    <% if (hasSallaWidget) { %>
+    <script type="module" src="https://cdn.assets.salla.network/prod/@salla.sa/fast-checkout-widget/v0.0.25/widget.esm.js"></script>
+    <% } %>
     <style>
         body { font-family: '<%= merchant.font_family || "Tajawal" %>', sans-serif; }
         <% if (merchant.font_size === 'small') { %>
@@ -123,7 +127,16 @@
                                 <span class="product-was-price"><%= product.old_price %> ر.س</span>
                             <% } %>
                         </div>
-                        <% if (product.salla_url) { %>
+                        <% if (product.salla_store_id && product.salla_product_id) { %>
+                            <div class="salla-widget-wrap">
+                                <salla-mini-checkout-widget
+                                    store-id="<%= product.salla_store_id %>"
+                                    products="[<%= product.salla_product_id %>]"
+                                    language="ar"
+                                    label="<%= product.salla_label || 'اشتري الآن' %>"
+                                ></salla-mini-checkout-widget>
+                            </div>
+                        <% } else if (product.salla_url) { %>
                             <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="product-buy-btn">
                                 <i class="fas fa-shopping-cart"></i> اشتري الآن
                             </a>

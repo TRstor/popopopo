@@ -851,7 +851,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-store"></i> رابط المنتج في سلة</label>
+                    <label><i class="fas fa-code"></i> كود ويدجت سلة (الصق الكود هنا)</label>
+                    <textarea name="salla_widget_code" rows="4" placeholder='<salla-mini-checkout-widget store-id="..." products="[...]" label="اشتري الآن"></salla-mini-checkout-widget>' dir="ltr" style="font-size:11px;font-family:monospace"></textarea>
+                    <small style="color:#888;display:block;margin-top:4px">الصق كود الويدجت من سلة وسيتم استخراج البيانات تلقائياً</small>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-link"></i> أو رابط المنتج في سلة (اختياري)</label>
                     <input type="url" name="salla_url" placeholder="https://salla.sa/store/product/..." dir="ltr">
                 </div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة المنتج</button>
@@ -890,7 +895,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-store"></i> رابط المنتج في سلة</label>
+                    <label><i class="fas fa-code"></i> كود ويدجت سلة</label>
+                    <textarea name="salla_widget_code" id="ep-salla-widget" rows="4" dir="ltr" style="font-size:11px;font-family:monospace"></textarea>
+                    <small style="color:#888;display:block;margin-top:4px">الصق كود جديد لتحديثه أو اتركه فارغ للإبقاء على الحالي</small>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-link"></i> أو رابط المنتج في سلة (اختياري)</label>
                     <input type="url" name="salla_url" id="ep-salla-url" dir="ltr">
                 </div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ التعديلات</button>

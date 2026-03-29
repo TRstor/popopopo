@@ -420,6 +420,12 @@ function openEditProductModal(product) {
     document.getElementById('ep-price').value = product.price || 0;
     document.getElementById('ep-old-price').value = product.old_price || '';
     document.getElementById('ep-salla-url').value = product.salla_url || '';
+    // Rebuild widget code from stored fields
+    let widgetCode = '';
+    if (product.salla_store_id && product.salla_product_id) {
+        widgetCode = `<salla-mini-checkout-widget\n  store-id="${product.salla_store_id}"\n  products="[${product.salla_product_id}]"\n  language="ar"\n  label="${product.salla_label || 'اشتري الآن'}"\n></salla-mini-checkout-widget>`;
+    }
+    document.getElementById('ep-salla-widget').value = widgetCode;
     document.getElementById('edit-product-form').action = '/dashboard/products/edit/' + product.id;
     document.getElementById('edit-product-modal').classList.add('show');
 }
