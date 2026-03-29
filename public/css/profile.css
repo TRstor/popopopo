@@ -677,7 +677,7 @@ body {
     font-size: 22px;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 280px) {
     .products-grid {
         grid-template-columns: 1fr;
     }
