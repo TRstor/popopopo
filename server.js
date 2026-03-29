@@ -84,9 +84,10 @@ app.get('/:username', (req, res) => {
 
     const links = db.prepare('SELECT * FROM links WHERE merchant_id = ? ORDER BY sort_order ASC').all(merchant.id);
     const sections = db.prepare('SELECT * FROM link_sections WHERE merchant_id = ? ORDER BY sort_order ASC').all(merchant.id);
+    const products = db.prepare('SELECT * FROM products WHERE merchant_id = ? AND is_active = 1 ORDER BY sort_order ASC').all(merchant.id);
     const viewCount = db.prepare('SELECT COUNT(*) as count FROM page_views WHERE merchant_id = ?').get(merchant.id).count;
 
-    res.render('profile', { merchant, links, sections, viewCount });
+    res.render('profile', { merchant, links, sections, products, viewCount });
 });
 
 // 404
@@ -175,6 +176,21 @@ db.exec(`
         title TEXT NOT NULL,
         message TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        merchant_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        price REAL DEFAULT 0,
+        old_price REAL DEFAULT 0,
+        image TEXT DEFAULT '',
+        salla_url TEXT DEFAULT '',
+        sort_order INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
     );
 `);
 

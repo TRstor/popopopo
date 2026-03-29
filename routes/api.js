@@ -19,6 +19,18 @@ router.post('/links/reorder', requireAuth, (req, res) => {
     catch (err) { res.status(500).json({ error: 'حدث خطأ' }); }
 });
 
+router.post('/products/reorder', requireAuth, (req, res) => {
+    const { order } = req.body;
+    const userId = req.session.user.id;
+    if (!Array.isArray(order)) return res.status(400).json({ error: 'بيانات غير صالحة' });
+    const updateStmt = db.prepare('UPDATE products SET sort_order = ? WHERE id = ? AND merchant_id = ?');
+    const transaction = db.transaction((items) => {
+        items.forEach((id, index) => { updateStmt.run(index, id, userId); });
+    });
+    try { transaction(order); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: 'حدث خطأ' }); }
+});
+
 router.post('/links/update/:id', requireAuth, (req, res) => {
     const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date, section_id } = req.body;
     const userId = req.session.user.id;

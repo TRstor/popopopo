@@ -31,7 +31,8 @@ router.get('/', (req, res) => {
     const notifications = db.prepare('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 5').all();
     const myTickets = db.prepare('SELECT * FROM tickets WHERE merchant_id = ? ORDER BY created_at DESC LIMIT 5').all(req.session.user.id);
     const filter = req.query.filter || 'all';
-    res.render('dashboard', { merchant, links, sections, profileUrl, viewCount, notifications, myTickets, filter });
+    const products = db.prepare('SELECT * FROM products WHERE merchant_id = ? ORDER BY sort_order ASC').all(req.session.user.id);
+    res.render('dashboard', { merchant, links, sections, profileUrl, viewCount, notifications, myTickets, filter, products });
 });
 
 router.post('/settings', upload.fields([
@@ -122,6 +123,45 @@ router.post('/tickets/submit', (req, res) => {
         db.prepare('INSERT INTO tickets (merchant_id,subject,message) VALUES (?,?,?)').run(req.session.user.id, subject, message);
     }
     res.redirect('/dashboard?msg=ticket_sent');
+});
+
+// ===== Products CRUD =====
+router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1 }]), (req, res) => {
+    const { title, description, price, old_price, salla_url } = req.body;
+    const userId = req.session.user.id;
+    const max = db.prepare('SELECT COALESCE(MAX(sort_order),0) as max_order FROM products WHERE merchant_id=?').get(userId);
+    let image = '';
+    if (req.files && req.files.product_image) {
+        image = '/uploads/' + req.files.product_image[0].filename;
+    }
+    db.prepare('INSERT INTO products (merchant_id,title,description,price,old_price,image,salla_url,sort_order) VALUES (?,?,?,?,?,?,?,?)')
+      .run(userId, title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, image, salla_url||'', max.max_order+1);
+    res.redirect('/dashboard?msg=product_added');
+});
+
+router.post('/products/edit/:id', upload.fields([{ name: 'product_image', maxCount: 1 }]), (req, res) => {
+    const { title, description, price, old_price, salla_url } = req.body;
+    const userId = req.session.user.id;
+    let query = 'UPDATE products SET title=?, description=?, price=?, old_price=?, salla_url=?';
+    let params = [title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, salla_url||''];
+    if (req.files && req.files.product_image) {
+        query += ', image=?';
+        params.push('/uploads/' + req.files.product_image[0].filename);
+    }
+    query += ' WHERE id=? AND merchant_id=?';
+    params.push(req.params.id, userId);
+    db.prepare(query).run(...params);
+    res.redirect('/dashboard?msg=product_saved');
+});
+
+router.post('/products/delete/:id', (req, res) => {
+    db.prepare('DELETE FROM products WHERE id=? AND merchant_id=?').run(req.params.id, req.session.user.id);
+    res.redirect('/dashboard?msg=product_deleted');
+});
+
+router.post('/products/toggle/:id', (req, res) => {
+    db.prepare('UPDATE products SET is_active = CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE id=? AND merchant_id=?').run(req.params.id, req.session.user.id);
+    res.redirect('/dashboard?msg=product_toggled');
 });
 
 module.exports = router;

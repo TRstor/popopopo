@@ -23,6 +23,9 @@
                 <a href="/dashboard" class="nav-item active" data-section="links-section" onclick="showSection('links-section', this)">
                     <i class="fas fa-th-large"></i> الروابط
                 </a>
+                <a href="#" class="nav-item" data-section="products-section" onclick="showSection('products-section', this)">
+                    <i class="fas fa-shopping-bag"></i> المنتجات
+                </a>
                 <a href="#" class="nav-item" data-section="sections-section" onclick="showSection('sections-section', this)">
                     <i class="fas fa-layer-group"></i> الأقسام
                 </a>
@@ -138,6 +141,68 @@
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="/dashboard/links/delete/<%= link.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                        <button type="submit" class="btn-icon delete" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section class="content-section hidden" id="products-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-shopping-bag"></i> منتجاتك</h3>
+                    <div class="section-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('add-product-modal')">
+                            <i class="fas fa-plus"></i> إضافة منتج
+                        </button>
+                    </div>
+                </div>
+
+                <div class="products-list" id="products-list">
+                    <% if (!products || products.length === 0) { %>
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>لم تضف أي منتجات بعد</p>
+                            <button class="btn btn-primary" onclick="openModal('add-product-modal')">أضف منتجك الأول</button>
+                        </div>
+                    <% } else { %>
+                        <% products.forEach((product, index) => { %>
+                            <div class="product-card" data-id="<%= product.id %>" draggable="true">
+                                <div class="drag-handle">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </div>
+                                <div class="product-thumb">
+                                    <% if (product.image) { %>
+                                        <img src="<%= product.image %>" alt="<%= product.title %>">
+                                    <% } else { %>
+                                        <i class="fas fa-image"></i>
+                                    <% } %>
+                                </div>
+                                <div class="product-info">
+                                    <strong><%= product.title %></strong>
+                                    <div class="product-price-row">
+                                        <span class="product-price"><%= product.price %> ر.س</span>
+                                        <% if (product.old_price > 0) { %>
+                                            <span class="product-old-price"><%= product.old_price %> ر.س</span>
+                                        <% } %>
+                                    </div>
+                                    <% if (product.description) { %><small class="product-desc-preview"><%= product.description %></small><% } %>
+                                </div>
+                                <div class="link-actions">
+                                    <form method="POST" action="/dashboard/products/toggle/<%= product.id %>" style="display:inline">
+                                        <button type="submit" class="btn-icon <%= product.is_active ? 'active' : 'inactive' %>" title="<%= product.is_active ? 'مفعل' : 'معطل' %>">
+                                            <i class="fas fa-<%= product.is_active ? 'eye' : 'eye-slash' %>"></i>
+                                        </button>
+                                    </form>
+                                    <button class="btn-icon edit" data-product='<%- JSON.stringify(product) %>' onclick="openEditProductModal(JSON.parse(this.dataset.product))" title="تعديل">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <form method="POST" action="/dashboard/products/delete/<%= product.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف المنتج؟')">
                                         <button type="submit" class="btn-icon delete" title="حذف">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -754,6 +819,85 @@
             </div>
         </div>
     </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal-overlay" id="add-product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-bag"></i> إضافة منتج</h3>
+                <button onclick="closeModal('add-product-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" action="/dashboard/products/add" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>اسم المنتج</label>
+                    <input type="text" name="title" placeholder="مثال: قميص قطني" required>
+                </div>
+                <div class="form-group">
+                    <label>الوصف (اختياري)</label>
+                    <input type="text" name="description" placeholder="وصف قصير للمنتج">
+                </div>
+                <div class="form-group">
+                    <label>صورة المنتج</label>
+                    <input type="file" name="product_image" accept="image/*">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>السعر (ر.س)</label>
+                        <input type="number" name="price" step="0.01" min="0" placeholder="99.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>السعر القديم (اختياري)</label>
+                        <input type="number" name="old_price" step="0.01" min="0" placeholder="149.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-store"></i> رابط المنتج في سلة</label>
+                    <input type="url" name="salla_url" placeholder="https://salla.sa/store/product/..." dir="ltr">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة المنتج</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal-overlay" id="edit-product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-pen"></i> تعديل المنتج</h3>
+                <button onclick="closeModal('edit-product-modal')" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" id="edit-product-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>اسم المنتج</label>
+                    <input type="text" name="title" id="ep-title" required>
+                </div>
+                <div class="form-group">
+                    <label>الوصف (اختياري)</label>
+                    <input type="text" name="description" id="ep-description">
+                </div>
+                <div class="form-group">
+                    <label>صورة المنتج (اتركها فارغة للإبقاء على الحالية)</label>
+                    <input type="file" name="product_image" accept="image/*">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>السعر (ر.س)</label>
+                        <input type="number" name="price" id="ep-price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>السعر القديم (اختياري)</label>
+                        <input type="number" name="old_price" id="ep-old-price" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-store"></i> رابط المنتج في سلة</label>
+                    <input type="url" name="salla_url" id="ep-salla-url" dir="ltr">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
     <script src="/js/dashboard.js"></script>
 </body>
 </html>

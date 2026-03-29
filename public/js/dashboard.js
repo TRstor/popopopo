@@ -197,7 +197,11 @@ function showToast(msg) {
         deleted: 'تم حذف الرابط',
         duplicated: 'تم تكرار الرابط',
         section_added: 'تم إضافة القسم',
-        ticket_sent: 'تم إرسال التذكرة'
+        ticket_sent: 'تم إرسال التذكرة',
+        product_added: 'تم إضافة المنتج',
+        product_saved: 'تم حفظ المنتج',
+        product_deleted: 'تم حذف المنتج',
+        product_toggled: 'تم تحديث حالة المنتج'
     };
     if (msg && msgs[msg]) {
         setTimeout(() => showToast(msgs[msg]), 300);
@@ -400,4 +404,100 @@ if (linksList) {
         touchDragItem = null;
         saveOrder();
     });
+}
+
+// ========== Products ==========
+
+// Open modal helper
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+
+// Edit product modal
+function openEditProductModal(product) {
+    document.getElementById('ep-title').value = product.title;
+    document.getElementById('ep-description').value = product.description || '';
+    document.getElementById('ep-price').value = product.price || 0;
+    document.getElementById('ep-old-price').value = product.old_price || '';
+    document.getElementById('ep-salla-url').value = product.salla_url || '';
+    document.getElementById('edit-product-form').action = '/dashboard/products/edit/' + product.id;
+    document.getElementById('edit-product-modal').classList.add('show');
+}
+
+// Product drag & drop reordering
+const productsList = document.getElementById('products-list');
+let draggedProduct = null;
+
+if (productsList) {
+    productsList.addEventListener('dragstart', (e) => {
+        const card = e.target.closest('.product-card');
+        if (!card) return;
+        draggedProduct = card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    productsList.addEventListener('dragend', (e) => {
+        const card = e.target.closest('.product-card');
+        if (card) card.classList.remove('dragging');
+        document.querySelectorAll('.product-card').forEach(c => c.classList.remove('drag-over'));
+        draggedProduct = null;
+        saveProductOrder();
+    });
+    productsList.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const card = e.target.closest('.product-card');
+        if (!card || card === draggedProduct) return;
+        const rect = card.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        document.querySelectorAll('.product-card').forEach(c => c.classList.remove('drag-over'));
+        card.classList.add('drag-over');
+        if (e.clientY < midY) {
+            productsList.insertBefore(draggedProduct, card);
+        } else {
+            productsList.insertBefore(draggedProduct, card.nextSibling);
+        }
+    });
+
+    // Touch support
+    let touchDragProduct = null;
+    productsList.addEventListener('touchstart', (e) => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        touchDragProduct = handle.closest('.product-card');
+        if (touchDragProduct) touchDragProduct.classList.add('dragging');
+    }, { passive: true });
+    productsList.addEventListener('touchmove', (e) => {
+        if (!touchDragProduct) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const cards = Array.from(document.querySelectorAll('.product-card:not(.dragging)'));
+        for (const card of cards) {
+            const rect = card.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (touch.clientY < midY) {
+                productsList.insertBefore(touchDragProduct, card);
+                break;
+            } else if (card === cards[cards.length - 1]) {
+                productsList.insertBefore(touchDragProduct, card.nextSibling);
+            }
+        }
+    }, { passive: false });
+    productsList.addEventListener('touchend', () => {
+        if (!touchDragProduct) return;
+        touchDragProduct.classList.remove('dragging');
+        touchDragProduct = null;
+        saveProductOrder();
+    });
+}
+
+async function saveProductOrder() {
+    const cards = document.querySelectorAll('.product-card');
+    const order = Array.from(cards).map(c => parseInt(c.dataset.id));
+    await fetch('/api/products/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order })
+    });
+    const iframe = document.getElementById('preview-iframe');
+    if (iframe) iframe.src = iframe.src;
 }

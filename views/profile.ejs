@@ -65,6 +65,15 @@
             </div>
         </div>
 
+        <% const activeProducts = (products || []).filter(p => p.is_active !== 0); %>
+        <% if (activeProducts.length > 0) { %>
+        <div class="profile-tabs">
+            <button class="profile-tab active" data-tab="links" onclick="switchTab('links', this)"><i class="fas fa-link"></i> الروابط</button>
+            <button class="profile-tab" data-tab="products" onclick="switchTab('products', this)"><i class="fas fa-shopping-bag"></i> المنتجات</button>
+        </div>
+        <% } %>
+
+        <div class="tab-content" id="tab-links">
         <div class="links-container">
             <% 
             const activeSections = sections || [];
@@ -87,6 +96,43 @@
                 <% } %>
             <% }) %>
         </div>
+        </div><!-- end tab-links -->
+
+        <div class="tab-content" id="tab-products" style="display:none">
+            <div class="products-grid">
+                <% activeProducts.forEach(product => { %>
+                <div class="product-item card-<%= merchant.card_style || 'default' %>">
+                    <% if (product.old_price > 0 && product.old_price > product.price) { %>
+                        <span class="product-discount-badge"><%= Math.round((1 - product.price / product.old_price) * 100) %>%-</span>
+                    <% } %>
+                    <div class="product-image">
+                        <% if (product.image) { %>
+                            <img src="<%= product.image %>" alt="<%= product.title %>">
+                        <% } else { %>
+                            <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
+                        <% } %>
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-title"><%= product.title %></h3>
+                        <% if (product.description) { %>
+                            <p class="product-description"><%= product.description %></p>
+                        <% } %>
+                        <div class="product-pricing">
+                            <span class="product-current-price"><%= product.price %> ر.س</span>
+                            <% if (product.old_price > 0) { %>
+                                <span class="product-was-price"><%= product.old_price %> ر.س</span>
+                            <% } %>
+                        </div>
+                        <% if (product.salla_url) { %>
+                            <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="product-buy-btn">
+                                <i class="fas fa-shopping-cart"></i> اشتري الآن
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+        </div><!-- end tab-products -->
 
         <div class="powered-by">
             <a href="/">Linkin1</a>
@@ -144,6 +190,15 @@
             if (id) fetch('/api/links/click/' + id, { method: 'POST' }).catch(() => {});
         });
     });
+
+    // Tab switching
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        const target = document.getElementById('tab-' + tab);
+        if (target) target.style.display = '';
+        if (btn) btn.classList.add('active');
+    }
     </script>
 </body>
 </html>
