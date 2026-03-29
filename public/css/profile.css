@@ -367,6 +367,38 @@ body {
     gap: 12px;
 }
 
+/* ===== Product Filter Bar ===== */
+.product-filter-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.product-filter-bar::-webkit-scrollbar { display: none; }
+.filter-btn {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.filter-btn:hover { color: var(--text); border-color: var(--accent); }
+.filter-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
 .product-item {
     background: var(--card-bg);
     border-radius: 16px;
@@ -504,6 +536,134 @@ body {
 
 .salla-widget-wrap salla-mini-checkout-widget {
     width: 100%;
+}
+
+/* ===== Product Preview Button ===== */
+.product-preview-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    z-index: 3;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    -webkit-tap-highlight-color: transparent;
+}
+.product-preview-btn:hover {
+    background: var(--accent);
+    transform: scale(1.1);
+}
+
+/* ===== Product Preview Modal ===== */
+.product-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(6px);
+    padding: 20px;
+}
+.product-preview-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+.product-preview-modal {
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 20px;
+    overflow: hidden;
+    max-width: 380px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid var(--border, #2a2a4a);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+.product-preview-overlay.show .product-preview-modal {
+    transform: scale(1) translateY(0);
+}
+.product-preview-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    z-index: 2;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+}
+.product-preview-close:hover { background: #ef4444; transform: scale(1.1); }
+.product-preview-image {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+}
+.product-preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.product-preview-image .product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: var(--text-muted);
+    opacity: 0.3;
+}
+.product-preview-body {
+    padding: 20px;
+}
+.product-preview-body h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+.product-preview-body p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+.product-preview-body p:empty { display: none; }
+.product-preview-pricing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.product-preview-pricing .product-current-price {
+    font-size: 22px;
 }
 
 @media (max-width: 360px) {

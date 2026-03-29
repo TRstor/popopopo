@@ -420,6 +420,7 @@ function openEditProductModal(product) {
     document.getElementById('ep-price').value = product.price || 0;
     document.getElementById('ep-old-price').value = product.old_price || '';
     document.getElementById('ep-salla-url').value = product.salla_url || '';
+    document.getElementById('ep-category').value = product.category || '';
     // Rebuild widget code from stored fields
     let widgetCode = '';
     if (product.salla_store_id && product.salla_product_id) {

@@ -191,6 +191,7 @@
                                             <span class="product-old-price"><%= product.old_price %> ر.س</span>
                                         <% } %>
                                     </div>
+                                    <% if (product.category) { %><span class="product-category-badge"><i class="fas fa-tag"></i> <%= product.category %></span><% } %>
                                     <% if (product.description) { %><small class="product-desc-preview"><%= product.description %></small><% } %>
                                 </div>
                                 <div class="link-actions">
@@ -837,6 +838,16 @@
                     <input type="text" name="description" placeholder="وصف قصير للمنتج">
                 </div>
                 <div class="form-group">
+                    <label><i class="fas fa-tag"></i> القسم (اختياري)</label>
+                    <input type="text" name="category" placeholder="مثال: ملابس، إلكترونيات، عطور..." list="category-suggestions">
+                    <datalist id="category-suggestions">
+                        <% const existingCategories = [...new Set((products||[]).map(p => p.category).filter(c => c))]; %>
+                        <% existingCategories.forEach(cat => { %>
+                            <option value="<%= cat %>">
+                        <% }) %>
+                    </datalist>
+                </div>
+                <div class="form-group">
                     <label>صورة المنتج</label>
                     <input type="file" name="product_image" accept="image/*">
                 </div>
@@ -882,6 +893,16 @@
                 <div class="form-group">
                     <label>الوصف (اختياري)</label>
                     <input type="text" name="description" id="ep-description">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> القسم (اختياري)</label>
+                    <input type="text" name="category" id="ep-category" list="category-suggestions-edit">
+                    <datalist id="category-suggestions-edit">
+                        <% const existingCats = [...new Set((products||[]).map(p => p.category).filter(c => c))]; %>
+                        <% existingCats.forEach(cat => { %>
+                            <option value="<%= cat %>">
+                        <% }) %>
+                    </datalist>
                 </div>
                 <div class="form-group">
                     <label>صورة المنتج (اتركها فارغة للإبقاء على الحالية)</label>

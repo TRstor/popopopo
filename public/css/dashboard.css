@@ -1409,6 +1409,16 @@ select:focus { border-color: #8B5CF6; }
     margin-top: 2px;
 }
 
+.product-category-badge {
+    display: inline-block;
+    font-size: 10px;
+    color: #a78bfa;
+    background: rgba(139,92,246,0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-top: 3px;
+}
+
 @media (max-width: 480px) {
     .product-card {
         flex-wrap: wrap;

@@ -190,6 +190,7 @@ db.exec(`
         salla_store_id TEXT DEFAULT '',
         salla_product_id TEXT DEFAULT '',
         salla_label TEXT DEFAULT '',
+        category TEXT DEFAULT '',
         sort_order INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -222,6 +223,7 @@ const migrations = [
     { table: 'products', col: 'salla_store_id', sql: "ALTER TABLE products ADD COLUMN salla_store_id TEXT DEFAULT ''" },
     { table: 'products', col: 'salla_product_id', sql: "ALTER TABLE products ADD COLUMN salla_product_id TEXT DEFAULT ''" },
     { table: 'products', col: 'salla_label', sql: "ALTER TABLE products ADD COLUMN salla_label TEXT DEFAULT ''" },
+    { table: 'products', col: 'category', sql: "ALTER TABLE products ADD COLUMN category TEXT DEFAULT ''" },
 ];
 
 migrations.forEach(m => {

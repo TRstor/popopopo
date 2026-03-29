@@ -140,7 +140,7 @@ function parseSallaWidget(code) {
 
 // ===== Products CRUD =====
 router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1 }]), (req, res) => {
-    const { title, description, price, old_price, salla_url, salla_widget_code } = req.body;
+    const { title, description, price, old_price, salla_url, salla_widget_code, category } = req.body;
     const userId = req.session.user.id;
     const max = db.prepare('SELECT COALESCE(MAX(sort_order),0) as max_order FROM products WHERE merchant_id=?').get(userId);
     let image = '';
@@ -148,16 +148,16 @@ router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1
         image = '/uploads/' + req.files.product_image[0].filename;
     }
     const salla = parseSallaWidget(salla_widget_code);
-    db.prepare('INSERT INTO products (merchant_id,title,description,price,old_price,image,salla_url,salla_store_id,salla_product_id,salla_label,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
-      .run(userId, title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, image, salla_url||'', salla.store_id, salla.product_id, salla.label, max.max_order+1);
+    db.prepare('INSERT INTO products (merchant_id,title,description,price,old_price,image,salla_url,salla_store_id,salla_product_id,salla_label,category,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+      .run(userId, title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, image, salla_url||'', salla.store_id, salla.product_id, salla.label, category||'', max.max_order+1);
     res.redirect('/dashboard?msg=product_added');
 });
 
 router.post('/products/edit/:id', upload.fields([{ name: 'product_image', maxCount: 1 }]), (req, res) => {
-    const { title, description, price, old_price, salla_url, salla_widget_code } = req.body;
+    const { title, description, price, old_price, salla_url, salla_widget_code, category } = req.body;
     const userId = req.session.user.id;
-    let query = 'UPDATE products SET title=?, description=?, price=?, old_price=?, salla_url=?';
-    let params = [title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, salla_url||''];
+    let query = 'UPDATE products SET title=?, description=?, price=?, old_price=?, salla_url=?, category=?';
+    let params = [title, description||'', parseFloat(price)||0, parseFloat(old_price)||0, salla_url||'', category||''];
     // Only update salla widget fields if new code was pasted
     if (salla_widget_code && salla_widget_code.trim()) {
         const salla = parseSallaWidget(salla_widget_code);
