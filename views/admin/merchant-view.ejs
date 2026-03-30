@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل التاجر - Linkin1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .merchant-profile { display: flex; align-items: center; gap: 20px; padding: 20px; background: #1a1a3a; border-radius: 16px; border: 1px solid #2a2a4a; margin-bottom: 24px; flex-wrap: wrap; }
+        .merchant-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: #2a2a4a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .merchant-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .merchant-avatar i { font-size: 32px; color: #555; }
+        .merchant-details h2 { font-size: 20px; margin-bottom: 4px; color: #fff; }
+        .merchant-details p { font-size: 13px; color: #888; margin-bottom: 2px; }
+        .merchant-details .merchant-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+        .merchant-details .meta-tag { font-size: 11px; padding: 4px 10px; border-radius: 8px; }
+        .meta-tag.verified { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .meta-tag.banned { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .meta-tag.active-tag { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .meta-tag.admin-tag { background: rgba(139,92,246,0.15); color: #8B5CF6; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-box { background: #1a1a3a; border: 1px solid #2a2a4a; border-radius: 14px; padding: 16px; text-align: center; }
+        .stat-box .stat-num { font-size: 28px; font-weight: 800; color: #8B5CF6; display: block; }
+        .stat-box .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+        .section-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .data-table th { background: #12122a; color: #888; font-size: 12px; padding: 10px 12px; text-align: right; border-bottom: 1px solid #2a2a4a; }
+        .data-table td { padding: 10px 12px; border-bottom: 1px solid #1a1a3a; font-size: 13px; color: #ccc; }
+        .data-table tr:hover td { background: rgba(139,92,246,0.03); }
+        .data-table .status-on { color: #22c55e; }
+        .data-table .status-off { color: #ef4444; }
+        .data-table .thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #8B5CF6; text-decoration: none; font-size: 14px; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        .empty-msg { color: #555; font-size: 14px; padding: 20px; text-align: center; }
+        .profile-link-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #8B5CF6; color: #fff; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 700; }
+        .profile-link-btn:hover { filter: brightness(1.15); }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
+            <nav>
+                <a href="/admin"><i class="fas fa-chart-bar"></i> الرئيسية</a>
+                <a href="/admin/merchants" class="active"><i class="fas fa-users"></i> التجار</a>
+                <a href="/admin/tickets"><i class="fas fa-headset"></i> التذاكر</a>
+                <a href="/admin/notifications"><i class="fas fa-bell"></i> الإشعارات</a>
+                <a href="/admin/status"><i class="fas fa-server"></i> حالة الخدمة</a>
+                <a href="/dashboard"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <a href="/admin/merchants" class="back-link"><i class="fas fa-arrow-right"></i> العودة للتجار</a>
+
+            <!-- Merchant Profile Card -->
+            <div class="merchant-profile">
+                <div class="merchant-avatar">
+                    <% if (merchant.profile_image) { %>
+                        <img src="<%= merchant.profile_image %>" alt="">
+                    <% } else { %>
+                        <i class="fas fa-store"></i>
+                    <% } %>
+                </div>
+                <div class="merchant-details">
+                    <h2><%= merchant.store_name %></h2>
+                    <p><i class="fas fa-at"></i> <%= merchant.username %></p>
+                    <p><i class="fas fa-envelope"></i> <%= merchant.email %></p>
+                    <p><i class="fas fa-calendar"></i> تسجيل: <%= new Date(merchant.created_at).toLocaleDateString('ar') %></p>
+                    <div class="merchant-meta">
+                        <% if (merchant.is_admin) { %><span class="meta-tag admin-tag"><i class="fas fa-shield-alt"></i> مشرف</span><% } %>
+                        <% if (merchant.is_verified) { %><span class="meta-tag verified"><i class="fas fa-check-circle"></i> موثق</span><% } %>
+                        <% if (merchant.is_banned) { %><span class="meta-tag banned"><i class="fas fa-ban"></i> محظور</span><% } else { %><span class="meta-tag active-tag"><i class="fas fa-check"></i> نشط</span><% } %>
+                    </div>
+                </div>
+                <div style="margin-right:auto">
+                    <a href="/<%= merchant.username %>" target="_blank" class="profile-link-btn"><i class="fas fa-external-link-alt"></i> زيارة الصفحة</a>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-num"><%= stats.totalViews %></span>
+                    <span class="stat-label">إجمالي المشاهدات</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= stats.viewsToday %></span>
+                    <span class="stat-label">مشاهدات اليوم</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= stats.viewsWeek %></span>
+                    <span class="stat-label">آخر 7 أيام</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= stats.viewsMonth %></span>
+                    <span class="stat-label">آخر 30 يوم</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= stats.totalClicks %></span>
+                    <span class="stat-label">نقرات الروابط</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= links.length %></span>
+                    <span class="stat-label">عدد الروابط</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num"><%= products.length %></span>
+                    <span class="stat-label">عدد المنتجات</span>
+                </div>
+            </div>
+
+            <!-- Links -->
+            <h3 class="section-title"><i class="fas fa-link"></i> الروابط (<%= links.length %>)</h3>
+            <% if (links.length === 0) { %>
+                <div class="empty-msg">لا توجد روابط</div>
+            <% } else { %>
+            <div class="admin-table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الأيقونة</th>
+                            <th>العنوان</th>
+                            <th>الرابط</th>
+                            <th>النقرات</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% links.forEach(link => { %>
+                        <tr>
+                            <td><i class="<%= link.icon || 'fas fa-link' %>" style="font-size:18px;color:#8B5CF6"></i></td>
+                            <td><strong><%= link.title %></strong></td>
+                            <td style="direction:ltr;font-size:11px;color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= link.url %></td>
+                            <td><%= link.click_count || 0 %></td>
+                            <td class="<%= link.is_active ? 'status-on' : 'status-off' %>"><%= link.is_active ? 'مفعل' : 'معطل' %></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+
+            <!-- Products -->
+            <h3 class="section-title"><i class="fas fa-shopping-bag"></i> المنتجات (<%= products.length %>)</h3>
+            <% if (products.length === 0) { %>
+                <div class="empty-msg">لا توجد منتجات</div>
+            <% } else { %>
+            <div class="admin-table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>المنتج</th>
+                            <th>القسم</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% products.forEach(product => { %>
+                        <tr>
+                            <td>
+                                <% if (product.image) { %>
+                                    <img src="<%= product.image %>" class="thumb">
+                                <% } else { %>
+                                    <i class="fas fa-image" style="color:#555;font-size:18px"></i>
+                                <% } %>
+                            </td>
+                            <td><strong><%= product.title %></strong><% if (product.description) { %><br><small style="color:#666"><%= product.description %></small><% } %></td>
+                            <td><%= product.category || '-' %></td>
+                            <td>
+                                <span style="color:#22c55e;font-weight:700"><%= product.price %> ر.س</span>
+                                <% if (product.old_price > 0) { %><br><small style="color:#666;text-decoration:line-through"><%= product.old_price %> ر.س</small><% } %>
+                            </td>
+                            <td class="<%= product.is_active ? 'status-on' : 'status-off' %>"><%= product.is_active ? 'مفعل' : 'معطل' %></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>

@@ -58,11 +58,11 @@ app.get('/directory', (req, res) => {
     const search = req.query.q || '';
     let merchants;
     if (search) {
-        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 AND (store_name LIKE ? OR username LIKE ?) ORDER BY is_verified DESC, created_at DESC").all(`%${search}%`, `%${search}%`);
+        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 AND is_admin = 0 AND (store_name LIKE ? OR username LIKE ?) ORDER BY is_verified DESC, created_at DESC").all(`%${search}%`, `%${search}%`);
     } else {
-        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 ORDER BY is_verified DESC, created_at DESC LIMIT 50").all();
+        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 AND is_admin = 0 ORDER BY is_verified DESC, created_at DESC LIMIT 50").all();
     }
-    const totalMerchants = db.prepare("SELECT COUNT(*) as count FROM merchants WHERE is_banned = 0").get().count;
+    const totalMerchants = db.prepare("SELECT COUNT(*) as count FROM merchants WHERE is_banned = 0 AND is_admin = 0").get().count;
     res.render('directory', { merchants, search, totalMerchants });
 });
 

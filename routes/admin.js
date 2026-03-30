@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 const os = require('os');
 const router = express.Router();
 
@@ -53,6 +54,62 @@ router.post('/merchants/:id/verify', (req, res) => {
 router.post('/merchants/:id/unverify', (req, res) => {
     db.prepare('UPDATE merchants SET is_verified = 0 WHERE id = ?').run(req.params.id);
     res.redirect('/admin/merchants');
+});
+
+// Delete merchant (cannot delete admin)
+router.post('/merchants/:id/delete', (req, res) => {
+    const merchant = db.prepare('SELECT is_admin FROM merchants WHERE id = ?').get(req.params.id);
+    if (merchant && merchant.is_admin) return res.redirect('/admin/merchants');
+    const mid = req.params.id;
+    db.prepare('DELETE FROM links WHERE merchant_id = ?').run(mid);
+    db.prepare('DELETE FROM products WHERE merchant_id = ?').run(mid);
+    db.prepare('DELETE FROM link_sections WHERE merchant_id = ?').run(mid);
+    db.prepare('DELETE FROM page_views WHERE merchant_id = ?').run(mid);
+    db.prepare('DELETE FROM tickets WHERE merchant_id = ?').run(mid);
+    db.prepare('DELETE FROM merchants WHERE id = ?').run(mid);
+    res.redirect('/admin/merchants');
+});
+
+// Edit merchant
+router.post('/merchants/:id/edit', (req, res) => {
+    const { store_name, email, username, password } = req.body;
+    const mid = req.params.id;
+    const merchant = db.prepare('SELECT * FROM merchants WHERE id = ?').get(mid);
+    if (!merchant) return res.redirect('/admin/merchants');
+
+    let query = 'UPDATE merchants SET store_name=?, email=?, username=?';
+    let params = [store_name || merchant.store_name, email || merchant.email, (username || merchant.username).toLowerCase()];
+
+    if (password && password.trim()) {
+        query += ', password=?';
+        params.push(bcrypt.hashSync(password, 10));
+    }
+    query += ' WHERE id=?';
+    params.push(mid);
+    try {
+        db.prepare(query).run(...params);
+    } catch(e) {}
+    res.redirect('/admin/merchants');
+});
+
+// View merchant details (links, products, stats)
+router.get('/merchants/:id/view', (req, res) => {
+    const mid = req.params.id;
+    const merchant = db.prepare('SELECT * FROM merchants WHERE id = ?').get(mid);
+    if (!merchant) return res.redirect('/admin/merchants');
+
+    const links = db.prepare('SELECT * FROM links WHERE merchant_id = ? ORDER BY sort_order ASC').all(mid);
+    const products = db.prepare('SELECT * FROM products WHERE merchant_id = ? ORDER BY sort_order ASC').all(mid);
+    const totalViews = db.prepare('SELECT COUNT(*) as c FROM page_views WHERE merchant_id = ?').get(mid).c;
+    const totalClicks = db.prepare('SELECT COALESCE(SUM(click_count),0) as c FROM links WHERE merchant_id = ?').get(mid).c;
+    const viewsToday = db.prepare("SELECT COUNT(*) as c FROM page_views WHERE merchant_id = ? AND date(created_at) = date('now')").get(mid).c;
+    const viewsWeek = db.prepare("SELECT COUNT(*) as c FROM page_views WHERE merchant_id = ? AND created_at >= datetime('now','-7 days')").get(mid).c;
+    const viewsMonth = db.prepare("SELECT COUNT(*) as c FROM page_views WHERE merchant_id = ? AND created_at >= datetime('now','-30 days')").get(mid).c;
+
+    res.render('admin/merchant-view', {
+        merchant, links, products,
+        stats: { totalViews, totalClicks, viewsToday, viewsWeek, viewsMonth }
+    });
 });
 
 // Tickets
