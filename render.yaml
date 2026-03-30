@@ -11,3 +11,5 @@ services:
         generateValue: true
       - key: FIREBASE_SERVICE_ACCOUNT
         sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
