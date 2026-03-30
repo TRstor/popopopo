@@ -7,52 +7,72 @@ function requireAuth(req, res, next) {
     next();
 }
 
-router.post('/links/reorder', requireAuth, (req, res) => {
+router.post('/links/reorder', requireAuth, async (req, res) => {
     const { order } = req.body;
     const userId = req.session.user.id;
     if (!Array.isArray(order)) return res.status(400).json({ error: 'بيانات غير صالحة' });
-    const updateStmt = db.prepare('UPDATE links SET sort_order = ? WHERE id = ? AND merchant_id = ?');
-    const transaction = db.transaction((items) => {
-        items.forEach((id, index) => { updateStmt.run(index, id, userId); });
-    });
-    try { transaction(order); res.json({ success: true }); }
-    catch (err) { res.status(500).json({ error: 'حدث خطأ' }); }
+    try {
+        for (let i = 0; i < order.length; i++) {
+            const link = await db.getLinkByIdAndMerchant(order[i], userId);
+            if (link) await db.updateLink(order[i], { sort_order: i });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'حدث خطأ' });
+    }
 });
 
-router.post('/products/reorder', requireAuth, (req, res) => {
+router.post('/products/reorder', requireAuth, async (req, res) => {
     const { order } = req.body;
     const userId = req.session.user.id;
     if (!Array.isArray(order)) return res.status(400).json({ error: 'بيانات غير صالحة' });
-    const updateStmt = db.prepare('UPDATE products SET sort_order = ? WHERE id = ? AND merchant_id = ?');
-    const transaction = db.transaction((items) => {
-        items.forEach((id, index) => { updateStmt.run(index, id, userId); });
-    });
-    try { transaction(order); res.json({ success: true }); }
-    catch (err) { res.status(500).json({ error: 'حدث خطأ' }); }
+    try {
+        for (let i = 0; i < order.length; i++) {
+            const product = await db.getProductByIdAndMerchant(order[i], userId);
+            if (product) await db.updateProduct(order[i], { sort_order: i });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'حدث خطأ' });
+    }
 });
 
-router.post('/links/update/:id', requireAuth, (req, res) => {
-    const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date, section_id } = req.body;
-    const userId = req.session.user.id;
-    const allowedSizes = ['full','half','third'];
-    const linkSize = allowedSizes.includes(size) ? size : 'full';
-    const si = (show_icon === 0 || show_icon === '0') ? 0 : 1;
-    const st = (show_text === 0 || show_text === '0') ? 0 : 1;
-    db.prepare('UPDATE links SET title=?, url=?, icon=?, color=?, size=?, description=?, badge=?, show_icon=?, show_text=?, border_style=?, gradient=?, countdown_date=?, section_id=? WHERE id=? AND merchant_id=?')
-      .run(title, url, icon, color, linkSize, description||'', badge||'', si, st, border_style||'none', gradient||'', countdown_date||'', parseInt(section_id)||0, req.params.id, userId);
-    res.json({ success: true });
+router.post('/links/update/:id', requireAuth, async (req, res) => {
+    try {
+        const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date, section_id } = req.body;
+        const userId = req.session.user.id;
+        const allowedSizes = ['full','half','third'];
+        const linkSize = allowedSizes.includes(size) ? size : 'full';
+        const si = (show_icon === 0 || show_icon === '0') ? 0 : 1;
+        const st = (show_text === 0 || show_text === '0') ? 0 : 1;
+
+        const existing = await db.getLinkByIdAndMerchant(req.params.id, userId);
+        if (!existing) return res.status(404).json({ error: 'الرابط غير موجود' });
+
+        await db.updateLink(req.params.id, {
+            title, url, icon, color, size: linkSize, description: description || '',
+            badge: badge || '', show_icon: si, show_text: st, border_style: border_style || 'none',
+            gradient: gradient || '', countdown_date: countdown_date || '', section_id: parseInt(section_id) || 0
+        });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'حدث خطأ' });
+    }
 });
 
 // Track link click
-router.post('/links/click/:id', (req, res) => {
+router.post('/links/click/:id', async (req, res) => {
     try {
-        db.prepare('UPDATE links SET click_count = click_count + 1 WHERE id = ?').run(req.params.id);
+        await db.incrementLinkClick(req.params.id);
     } catch(e) {}
     res.json({ success: true });
 });
 
 // Apply design preset (theme + settings + demo links)
-router.post('/preset/apply', requireAuth, (req, res) => {
+router.post('/preset/apply', requireAuth, async (req, res) => {
     const { preset } = req.body;
     const userId = req.session.user.id;
     if (![1,2,3,4].includes(Number(preset))) return res.status(400).json({ error: 'تصميم غير صالح' });
@@ -107,24 +127,28 @@ router.post('/preset/apply', requireAuth, (req, res) => {
     const p = presets[Number(preset)];
     if (!p) return res.status(400).json({ error: 'تصميم غير صالح' });
 
-    const applyTransaction = db.transaction(() => {
+    try {
         // Update merchant settings
-        db.prepare('UPDATE merchants SET theme_style=?, button_shape=?, card_style=?, font_family=?, font_size=?, theme_color=? WHERE id=?')
-          .run(p.theme_style, p.button_shape, p.card_style, p.font_family, p.font_size, p.theme_color, userId);
+        await db.updateMerchant(userId, {
+            theme_style: p.theme_style, button_shape: p.button_shape, card_style: p.card_style,
+            font_family: p.font_family, font_size: p.font_size, theme_color: p.theme_color
+        });
 
         // Delete existing links
-        db.prepare('DELETE FROM links WHERE merchant_id=?').run(userId);
+        await db.deleteLinksByMerchant(userId);
 
         // Insert preset links
-        const insertLink = db.prepare('INSERT INTO links (merchant_id,title,url,icon,color,size,description,badge,show_icon,show_text,border_style,gradient,countdown_date,section_id,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-        p.links.forEach((link, i) => {
-            insertLink.run(userId, link.title, link.url, link.icon, link.color, link.size, '', '', 1, 1, 'none', link.gradient, '', 0, i);
-        });
-    });
+        for (let i = 0; i < p.links.length; i++) {
+            const link = p.links[i];
+            await db.createLink({
+                merchant_id: userId, title: link.title, url: link.url, icon: link.icon,
+                color: link.color, size: link.size, description: '', badge: '',
+                show_icon: 1, show_text: 1, border_style: 'none', gradient: link.gradient,
+                countdown_date: '', section_id: 0, sort_order: i
+            });
+        }
 
-    try {
-        applyTransaction();
-        // Update session with new theme settings
+        // Update session
         req.session.user.theme_style = p.theme_style;
         req.session.user.theme_color = p.theme_color;
         req.session.user.button_shape = p.button_shape;
@@ -133,6 +157,7 @@ router.post('/preset/apply', requireAuth, (req, res) => {
         req.session.user.card_style = p.card_style;
         res.json({ success: true });
     } catch(err) {
+        console.error(err);
         res.status(500).json({ error: 'حدث خطأ' });
     }
 });

@@ -21,11 +21,11 @@
   "homepage": "https://github.com/TRstor/popopopo#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.8.0",
-    "connect-sqlite3": "^0.9.16",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "firebase-admin": "^13.7.0",
+    "firestore-store": "^2.0.2",
     "multer": "^2.1.1",
     "uuid": "^13.0.0"
   }

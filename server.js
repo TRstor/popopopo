@@ -1,9 +1,9 @@
 const express = require('express');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+const FirestoreStore = require('firestore-store')(session);
 const path = require('path');
 const fs = require('fs');
-const db = require('./db');
+const dbModule = require('./db');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const apiRoutes = require('./routes/api');
@@ -12,11 +12,9 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Ensure directories exist
-['data', 'uploads'].forEach(dir => {
-    const p = path.join(__dirname, dir);
-    if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
-});
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Middleware
 app.use(express.json());
@@ -24,9 +22,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Session
+// Session with Firestore store
 app.use(session({
-    store: new SQLiteStore({ db: 'sessions.sqlite', dir: './data' }),
+    store: new FirestoreStore({
+        database: dbModule.db,
+        collection: 'sessions'
+    }),
     secret: process.env.SESSION_SECRET || 'tr-store-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
@@ -54,40 +55,47 @@ app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
 
 // Merchant directory
-app.get('/directory', (req, res) => {
-    const search = req.query.q || '';
-    let merchants;
-    if (search) {
-        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 AND is_admin = 0 AND (store_name LIKE ? OR username LIKE ?) ORDER BY is_verified DESC, created_at DESC").all(`%${search}%`, `%${search}%`);
-    } else {
-        merchants = db.prepare("SELECT id, username, store_name, store_desc, profile_image, is_verified, theme_style FROM merchants WHERE is_banned = 0 AND is_admin = 0 ORDER BY is_verified DESC, created_at DESC LIMIT 50").all();
+app.get('/directory', async (req, res) => {
+    try {
+        const search = req.query.q || '';
+        const merchants = await dbModule.getDirectoryMerchants(search);
+        const totalMerchants = await dbModule.countMerchants({ is_banned: 0, is_admin: 0 });
+        res.render('directory', { merchants, search, totalMerchants });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render('404');
     }
-    const totalMerchants = db.prepare("SELECT COUNT(*) as count FROM merchants WHERE is_banned = 0 AND is_admin = 0").get().count;
-    res.render('directory', { merchants, search, totalMerchants });
 });
 
 // Public profile page - must be last
-app.get('/:username', (req, res) => {
-    const username = req.params.username.toLowerCase();
-    const merchant = db.prepare('SELECT * FROM merchants WHERE username = ? AND is_banned = 0').get(username);
-
-    if (!merchant) {
-        return res.status(404).render('404');
-    }
-
-    // Track page view
-    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-    const ua = req.headers['user-agent'] || '';
+app.get('/:username', async (req, res) => {
     try {
-        db.prepare('INSERT INTO page_views (merchant_id, ip_address, user_agent) VALUES (?, ?, ?)').run(merchant.id, ip, ua);
-    } catch(e) {}
+        const username = req.params.username.toLowerCase();
+        const merchant = await dbModule.getMerchantByUsernameNotBanned(username);
 
-    const links = db.prepare('SELECT * FROM links WHERE merchant_id = ? ORDER BY sort_order ASC').all(merchant.id);
-    const sections = db.prepare('SELECT * FROM link_sections WHERE merchant_id = ? ORDER BY sort_order ASC').all(merchant.id);
-    const products = db.prepare('SELECT * FROM products WHERE merchant_id = ? AND is_active = 1 ORDER BY sort_order ASC').all(merchant.id);
-    const viewCount = db.prepare('SELECT COUNT(*) as count FROM page_views WHERE merchant_id = ?').get(merchant.id).count;
+        if (!merchant) {
+            return res.status(404).render('404');
+        }
 
-    res.render('profile', { merchant, links, sections, products, viewCount });
+        // Track page view
+        const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+        const ua = req.headers['user-agent'] || '';
+        try {
+            await dbModule.createPageView({ merchant_id: merchant.id, ip_address: ip, user_agent: ua });
+        } catch(e) {}
+
+        const [links, sections, products, viewCount] = await Promise.all([
+            dbModule.getLinksByMerchant(merchant.id),
+            dbModule.getSectionsByMerchant(merchant.id),
+            dbModule.getActiveProductsByMerchant(merchant.id),
+            dbModule.countPageViews(merchant.id)
+        ]);
+
+        res.render('profile', { merchant, links, sections, products, viewCount });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render('404');
+    }
 });
 
 // 404
@@ -95,169 +103,46 @@ app.use((req, res) => {
     res.status(404).render('404');
 });
 
-// Initialize DB
-db.exec(`
-    CREATE TABLE IF NOT EXISTS merchants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        store_name TEXT NOT NULL,
-        store_desc TEXT DEFAULT '',
-        profile_image TEXT DEFAULT '',
-        cover_image TEXT DEFAULT '',
-        bg_image TEXT DEFAULT '',
-        theme_color TEXT DEFAULT '#8B5CF6',
-        theme_style TEXT DEFAULT 'dark',
-        button_shape TEXT DEFAULT 'rounded',
-        font_family TEXT DEFAULT 'Tajawal',
-        font_size TEXT DEFAULT 'medium',
-        card_style TEXT DEFAULT 'default',
-        is_verified INTEGER DEFAULT 0,
-        is_banned INTEGER DEFAULT 0,
-        is_admin INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+// Initialize admin and start server
+async function startServer() {
+    try {
+        // Create default admin from environment variables
+        const adminExists = await dbModule.getFirstAdmin();
+        if (!adminExists && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+            const bcrypt = require('bcryptjs');
+            const adminEmail = process.env.ADMIN_EMAIL;
+            const adminPassword = process.env.ADMIN_PASSWORD;
+            const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+            const adminStore = process.env.ADMIN_STORE_NAME || 'المدير';
 
-    CREATE TABLE IF NOT EXISTS links (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        merchant_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        url TEXT NOT NULL,
-        icon TEXT DEFAULT 'fas fa-link',
-        color TEXT DEFAULT '#8B5CF6',
-        size TEXT DEFAULT 'full',
-        description TEXT DEFAULT '',
-        badge TEXT DEFAULT '',
-        show_icon INTEGER DEFAULT 1,
-        show_text INTEGER DEFAULT 1,
-        border_style TEXT DEFAULT 'none',
-        gradient TEXT DEFAULT '',
-        countdown_date TEXT DEFAULT '',
-        section_id INTEGER DEFAULT 0,
-        sort_order INTEGER DEFAULT 0,
-        is_active INTEGER DEFAULT 1,
-        click_count INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS link_sections (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        merchant_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        sort_order INTEGER DEFAULT 0,
-        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS page_views (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        merchant_id INTEGER NOT NULL,
-        ip_address TEXT DEFAULT '',
-        user_agent TEXT DEFAULT '',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS tickets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        merchant_id INTEGER NOT NULL,
-        subject TEXT NOT NULL,
-        message TEXT NOT NULL,
-        status TEXT DEFAULT 'open',
-        admin_reply TEXT DEFAULT '',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        message TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        merchant_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT DEFAULT '',
-        price REAL DEFAULT 0,
-        old_price REAL DEFAULT 0,
-        image TEXT DEFAULT '',
-        salla_url TEXT DEFAULT '',
-        salla_store_id TEXT DEFAULT '',
-        salla_product_id TEXT DEFAULT '',
-        salla_label TEXT DEFAULT '',
-        category TEXT DEFAULT '',
-        sort_order INTEGER DEFAULT 0,
-        is_active INTEGER DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
-    );
-`);
-
-// Migrations - add new columns safely
-const migrations = [
-    { table: 'links', col: 'size', sql: "ALTER TABLE links ADD COLUMN size TEXT DEFAULT 'full'" },
-    { table: 'merchants', col: 'theme_style', sql: "ALTER TABLE merchants ADD COLUMN theme_style TEXT DEFAULT 'dark'" },
-    { table: 'merchants', col: 'cover_image', sql: "ALTER TABLE merchants ADD COLUMN cover_image TEXT DEFAULT ''" },
-    { table: 'merchants', col: 'bg_image', sql: "ALTER TABLE merchants ADD COLUMN bg_image TEXT DEFAULT ''" },
-    { table: 'merchants', col: 'button_shape', sql: "ALTER TABLE merchants ADD COLUMN button_shape TEXT DEFAULT 'rounded'" },
-    { table: 'merchants', col: 'font_family', sql: "ALTER TABLE merchants ADD COLUMN font_family TEXT DEFAULT 'Tajawal'" },
-    { table: 'merchants', col: 'font_size', sql: "ALTER TABLE merchants ADD COLUMN font_size TEXT DEFAULT 'medium'" },
-    { table: 'merchants', col: 'card_style', sql: "ALTER TABLE merchants ADD COLUMN card_style TEXT DEFAULT 'default'" },
-    { table: 'merchants', col: 'is_verified', sql: "ALTER TABLE merchants ADD COLUMN is_verified INTEGER DEFAULT 0" },
-    { table: 'merchants', col: 'is_banned', sql: "ALTER TABLE merchants ADD COLUMN is_banned INTEGER DEFAULT 0" },
-    { table: 'merchants', col: 'is_admin', sql: "ALTER TABLE merchants ADD COLUMN is_admin INTEGER DEFAULT 0" },
-    { table: 'links', col: 'description', sql: "ALTER TABLE links ADD COLUMN description TEXT DEFAULT ''" },
-    { table: 'links', col: 'badge', sql: "ALTER TABLE links ADD COLUMN badge TEXT DEFAULT ''" },
-    { table: 'links', col: 'show_icon', sql: "ALTER TABLE links ADD COLUMN show_icon INTEGER DEFAULT 1" },
-    { table: 'links', col: 'show_text', sql: "ALTER TABLE links ADD COLUMN show_text INTEGER DEFAULT 1" },
-    { table: 'links', col: 'border_style', sql: "ALTER TABLE links ADD COLUMN border_style TEXT DEFAULT 'none'" },
-    { table: 'links', col: 'gradient', sql: "ALTER TABLE links ADD COLUMN gradient TEXT DEFAULT ''" },
-    { table: 'links', col: 'countdown_date', sql: "ALTER TABLE links ADD COLUMN countdown_date TEXT DEFAULT ''" },
-    { table: 'links', col: 'section_id', sql: "ALTER TABLE links ADD COLUMN section_id INTEGER DEFAULT 0" },
-    { table: 'links', col: 'click_count', sql: "ALTER TABLE links ADD COLUMN click_count INTEGER DEFAULT 0" },
-    { table: 'products', col: 'salla_store_id', sql: "ALTER TABLE products ADD COLUMN salla_store_id TEXT DEFAULT ''" },
-    { table: 'products', col: 'salla_product_id', sql: "ALTER TABLE products ADD COLUMN salla_product_id TEXT DEFAULT ''" },
-    { table: 'products', col: 'salla_label', sql: "ALTER TABLE products ADD COLUMN salla_label TEXT DEFAULT ''" },
-    { table: 'products', col: 'category', sql: "ALTER TABLE products ADD COLUMN category TEXT DEFAULT ''" },
-];
-
-migrations.forEach(m => {
-    try { db.prepare(`SELECT ${m.col} FROM ${m.table} LIMIT 1`).get(); }
-    catch(e) { try { db.exec(m.sql); } catch(e2) {} }
-});
-
-// Create default admin from environment variables
-const adminExists = db.prepare("SELECT id FROM merchants WHERE is_admin = 1 LIMIT 1").get();
-if (!adminExists && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-    const bcrypt = require('bcryptjs');
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminStore = process.env.ADMIN_STORE_NAME || 'المدير';
-
-    let admin = db.prepare("SELECT id FROM merchants WHERE email = ?").get(adminEmail);
-    if (!admin) {
-        const hashedPassword = bcrypt.hashSync(adminPassword, 10);
-        const result = db.prepare(
-            'INSERT INTO merchants (username, email, password, store_name, is_admin) VALUES (?, ?, ?, ?, 1)'
-        ).run(adminUsername.toLowerCase(), adminEmail, hashedPassword, adminStore);
-        console.log('Admin account created: ' + adminEmail);
-    } else {
-        db.prepare("UPDATE merchants SET is_admin = 1 WHERE id = ?").run(admin.id);
-        console.log('Admin privileges granted to: ' + adminEmail);
+            const existing = await dbModule.getMerchantByEmail(adminEmail);
+            if (!existing) {
+                const hashedPassword = bcrypt.hashSync(adminPassword, 10);
+                await dbModule.createMerchant({
+                    username: adminUsername.toLowerCase(),
+                    email: adminEmail,
+                    password: hashedPassword,
+                    store_name: adminStore,
+                    is_admin: 1
+                });
+                console.log('Admin account created: ' + adminEmail);
+            } else {
+                await dbModule.updateMerchant(existing.id, { is_admin: 1 });
+                console.log('Admin privileges granted to: ' + adminEmail);
+            }
+        } else if (!adminExists) {
+            const firstMerchant = await dbModule.getFirstMerchant();
+            if (firstMerchant) {
+                await dbModule.updateMerchant(firstMerchant.id, { is_admin: 1 });
+            }
+        }
+    } catch (err) {
+        console.error('Error initializing admin:', err);
     }
-} else if (!adminExists) {
-    const firstMerchant = db.prepare("SELECT id FROM merchants ORDER BY id ASC LIMIT 1").get();
-    if (firstMerchant) {
-        db.prepare("UPDATE merchants SET is_admin = 1 WHERE id = ?").run(firstMerchant.id);
-    }
+
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
 }
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();

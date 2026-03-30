@@ -4,13 +4,18 @@ const db = require('../db');
 const router = express.Router();
 
 // Home page
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     if (req.session.user) {
         return res.redirect('/dashboard');
     }
-    const totalMerchants = db.prepare('SELECT COUNT(*) as count FROM merchants WHERE is_banned = 0').get().count;
-    const featuredMerchants = db.prepare("SELECT username, store_name, profile_image, store_desc FROM merchants WHERE is_banned = 0 AND profile_image != '' ORDER BY is_verified DESC LIMIT 6").all();
-    res.render('home', { totalMerchants, featuredMerchants });
+    try {
+        const totalMerchants = await db.countMerchants({ is_banned: 0 });
+        const featuredMerchants = await db.getFeaturedMerchants(6);
+        res.render('home', { totalMerchants, featuredMerchants });
+    } catch (err) {
+        console.error(err);
+        res.render('home', { totalMerchants: 0, featuredMerchants: [] });
+    }
 });
 
 // Login page
@@ -20,27 +25,32 @@ router.get('/login', (req, res) => {
 });
 
 // Login handler
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
         return res.render('login', { error: 'يرجى ملء جميع الحقول' });
     }
 
-    const merchant = db.prepare('SELECT * FROM merchants WHERE email = ?').get(email);
+    try {
+        const merchant = await db.getMerchantByEmail(email);
 
-    if (!merchant || !bcrypt.compareSync(password, merchant.password)) {
-        return res.render('login', { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
+        if (!merchant || !bcrypt.compareSync(password, merchant.password)) {
+            return res.render('login', { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
+        }
+
+        req.session.user = {
+            id: merchant.id,
+            username: merchant.username,
+            email: merchant.email,
+            store_name: merchant.store_name
+        };
+
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error(err);
+        res.render('login', { error: 'حدث خطأ، يرجى المحاولة مرة أخرى' });
     }
-
-    req.session.user = {
-        id: merchant.id,
-        username: merchant.username,
-        email: merchant.email,
-        store_name: merchant.store_name
-    };
-
-    res.redirect('/dashboard');
 });
 
 // Register page
@@ -50,7 +60,7 @@ router.get('/register', (req, res) => {
 });
 
 // Register handler
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { username, email, password, store_name } = req.body;
 
     if (!username || !email || !password || !store_name) {
@@ -68,18 +78,21 @@ router.post('/register', (req, res) => {
         return res.render('register', { error: 'اسم المستخدم محجوز، اختر اسماً آخر' });
     }
 
-    // Check if username or email exists
-    const existing = db.prepare('SELECT id FROM merchants WHERE username = ? OR email = ?').get(username.toLowerCase(), email);
-    if (existing) {
-        return res.render('register', { error: 'اسم المستخدم أو البريد الإلكتروني مستخدم بالفعل' });
-    }
-
-    const hashedPassword = bcrypt.hashSync(password, 10);
-
     try {
-        const result = db.prepare(
-            'INSERT INTO merchants (username, email, password, store_name) VALUES (?, ?, ?, ?)'
-        ).run(username.toLowerCase(), email, hashedPassword, store_name);
+        // Check if username or email exists
+        const existing = await db.getMerchantByEmailOrUsername(email, username.toLowerCase());
+        if (existing) {
+            return res.render('register', { error: 'اسم المستخدم أو البريد الإلكتروني مستخدم بالفعل' });
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+
+        const result = await db.createMerchant({
+            username: username.toLowerCase(),
+            email,
+            password: hashedPassword,
+            store_name
+        });
 
         req.session.user = {
             id: result.lastInsertRowid,
@@ -90,6 +103,7 @@ router.post('/register', (req, res) => {
 
         res.redirect('/dashboard');
     } catch (err) {
+        console.error(err);
         res.render('register', { error: 'حدث خطأ، يرجى المحاولة مرة أخرى' });
     }
 });
