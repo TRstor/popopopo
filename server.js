@@ -231,9 +231,27 @@ migrations.forEach(m => {
     catch(e) { try { db.exec(m.sql); } catch(e2) {} }
 });
 
-// Create default admin if none exists
+// Create default admin from environment variables
 const adminExists = db.prepare("SELECT id FROM merchants WHERE is_admin = 1 LIMIT 1").get();
-if (!adminExists) {
+if (!adminExists && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    const bcrypt = require('bcryptjs');
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminStore = process.env.ADMIN_STORE_NAME || 'المدير';
+
+    let admin = db.prepare("SELECT id FROM merchants WHERE email = ?").get(adminEmail);
+    if (!admin) {
+        const hashedPassword = bcrypt.hashSync(adminPassword, 10);
+        const result = db.prepare(
+            'INSERT INTO merchants (username, email, password, store_name, is_admin) VALUES (?, ?, ?, ?, 1)'
+        ).run(adminUsername.toLowerCase(), adminEmail, hashedPassword, adminStore);
+        console.log('Admin account created: ' + adminEmail);
+    } else {
+        db.prepare("UPDATE merchants SET is_admin = 1 WHERE id = ?").run(admin.id);
+        console.log('Admin privileges granted to: ' + adminEmail);
+    }
+} else if (!adminExists) {
     const firstMerchant = db.prepare("SELECT id FROM merchants ORDER BY id ASC LIMIT 1").get();
     if (firstMerchant) {
         db.prepare("UPDATE merchants SET is_admin = 1 WHERE id = ?").run(firstMerchant.id);
