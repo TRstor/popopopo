@@ -176,8 +176,8 @@ async function getLinkByIdAndMerchant(id, merchantId) {
 
 async function getLinksByMerchant(merchantId) {
     const snap = await db.collection('links')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'asc').get();
-    return snap.docs.map(d => d.data());
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.map(d => d.data()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
 
 async function updateLink(id, data) {
@@ -216,8 +216,9 @@ async function incrementLinkClick(id) {
 
 async function getMaxLinkSortOrder(merchantId) {
     const snap = await db.collection('links')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'desc').limit(1).get();
-    return snap.empty ? 0 : (snap.docs[0].data().sort_order || 0);
+        .where('merchant_id', '==', merchantId).get();
+    if (snap.empty) return 0;
+    return Math.max(...snap.docs.map(d => d.data().sort_order || 0));
 }
 
 async function countLinks() {
@@ -242,14 +243,15 @@ async function createSection(data) {
 
 async function getSectionsByMerchant(merchantId) {
     const snap = await db.collection('link_sections')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'asc').get();
-    return snap.docs.map(d => d.data());
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.map(d => d.data()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
 
 async function getMaxSectionSortOrder(merchantId) {
     const snap = await db.collection('link_sections')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'desc').limit(1).get();
-    return snap.empty ? 0 : (snap.docs[0].data().sort_order || 0);
+        .where('merchant_id', '==', merchantId).get();
+    if (snap.empty) return 0;
+    return Math.max(...snap.docs.map(d => d.data().sort_order || 0));
 }
 
 async function deleteSectionByIdAndMerchant(id, merchantId) {
@@ -293,23 +295,26 @@ async function countAllPageViews() {
 
 async function countPageViewsToday(merchantId) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString();
     const snap = await db.collection('page_views')
-        .where('merchant_id', '==', merchantId).where('created_at', '>=', today.toISOString()).count().get();
-    return snap.data().count;
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.filter(d => (d.data().created_at || '') >= todayStr).length;
 }
 
 async function countPageViewsWeek(merchantId) {
     const week = new Date(); week.setDate(week.getDate() - 7);
+    const weekStr = week.toISOString();
     const snap = await db.collection('page_views')
-        .where('merchant_id', '==', merchantId).where('created_at', '>=', week.toISOString()).count().get();
-    return snap.data().count;
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.filter(d => (d.data().created_at || '') >= weekStr).length;
 }
 
 async function countPageViewsMonth(merchantId) {
     const month = new Date(); month.setDate(month.getDate() - 30);
+    const monthStr = month.toISOString();
     const snap = await db.collection('page_views')
-        .where('merchant_id', '==', merchantId).where('created_at', '>=', month.toISOString()).count().get();
-    return snap.data().count;
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.filter(d => (d.data().created_at || '') >= monthStr).length;
 }
 
 async function deletePageViewsByMerchant(merchantId) {
@@ -336,8 +341,9 @@ async function createTicket(data) {
 
 async function getTicketsByMerchant(merchantId, limit = 5) {
     const snap = await db.collection('tickets')
-        .where('merchant_id', '==', merchantId).orderBy('created_at', 'desc').limit(limit).get();
-    return snap.docs.map(d => d.data());
+        .where('merchant_id', '==', merchantId).get();
+    const sorted = snap.docs.map(d => d.data()).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    return sorted.slice(0, limit);
 }
 
 async function getAllTicketsWithMerchant() {
@@ -416,15 +422,14 @@ async function createProduct(data) {
 
 async function getProductsByMerchant(merchantId) {
     const snap = await db.collection('products')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'asc').get();
-    return snap.docs.map(d => d.data());
+        .where('merchant_id', '==', merchantId).get();
+    return snap.docs.map(d => d.data()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
 
 async function getActiveProductsByMerchant(merchantId) {
     const snap = await db.collection('products')
-        .where('merchant_id', '==', merchantId).where('is_active', '==', 1)
-        .orderBy('sort_order', 'asc').get();
-    return snap.docs.map(d => d.data());
+        .where('merchant_id', '==', merchantId).where('is_active', '==', 1).get();
+    return snap.docs.map(d => d.data()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
 
 async function updateProduct(id, data) {
@@ -445,8 +450,9 @@ async function toggleProductActive(id, merchantId) {
 
 async function getMaxProductSortOrder(merchantId) {
     const snap = await db.collection('products')
-        .where('merchant_id', '==', merchantId).orderBy('sort_order', 'desc').limit(1).get();
-    return snap.empty ? 0 : (snap.docs[0].data().sort_order || 0);
+        .where('merchant_id', '==', merchantId).get();
+    if (snap.empty) return 0;
+    return Math.max(...snap.docs.map(d => d.data().sort_order || 0));
 }
 
 async function deleteProductsByMerchant(merchantId) {
