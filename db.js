@@ -463,6 +463,52 @@ async function getProductByIdAndMerchant(id, merchantId) {
     return data.merchant_id === merchantId ? data : null;
 }
 
+// ===== Files (images stored in Firestore) =====
+async function saveFile(buffer, originalName, folder) {
+    const sharp = require('sharp');
+    const { v4: uuidv4 } = require('uuid');
+    const fileId = uuidv4();
+
+    // Compress & resize image to WebP (keeps size well under Firestore 1MB doc limit)
+    const maxDimensions = {
+        profiles: { width: 400, height: 400 },
+        covers: { width: 1200, height: 400 },
+        backgrounds: { width: 1200, height: 800 },
+        products: { width: 600, height: 600 }
+    };
+    const dim = maxDimensions[folder] || { width: 800, height: 800 };
+
+    const compressed = await sharp(buffer)
+        .resize(dim.width, dim.height, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+
+    const base64 = compressed.toString('base64');
+
+    await db.collection('files').doc(fileId).set({
+        data: base64,
+        contentType: 'image/webp',
+        folder,
+        originalName,
+        size: compressed.length,
+        createdAt: new Date().toISOString()
+    });
+
+    return `/uploads/${fileId}`;
+}
+
+async function getFile(fileId) {
+    const doc = await db.collection('files').doc(fileId).get();
+    return doc.exists ? doc.data() : null;
+}
+
+async function deleteFile(fileId) {
+    if (fileId && fileId.startsWith('/uploads/')) {
+        const id = fileId.replace('/uploads/', '');
+        await db.collection('files').doc(id).delete();
+    }
+}
+
 module.exports = {
     db, admin,
     createMerchant, getMerchantById, getMerchantByEmail, getMerchantByUsername,
@@ -482,4 +528,5 @@ module.exports = {
     createProduct, getProductsByMerchant, getActiveProductsByMerchant,
     updateProduct, deleteProductByIdAndMerchant, toggleProductActive,
     getMaxProductSortOrder, deleteProductsByMerchant, getProductByIdAndMerchant,
+    saveFile, getFile, deleteFile,
 };
