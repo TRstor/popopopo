@@ -6,7 +6,7 @@ const router = express.Router();
 // Home page
 router.get('/', async (req, res) => {
     if (req.session.user) {
-        return res.redirect('/dashboard');
+        return res.redirect(req.session.user.is_admin ? '/admin' : '/dashboard');
     }
     try {
         const totalMerchants = await db.countMerchants({ is_banned: 0 });
@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 
 // Login page
 router.get('/login', (req, res) => {
-    if (req.session.user) return res.redirect('/dashboard');
+    if (req.session.user) return res.redirect(req.session.user.is_admin ? '/admin' : '/dashboard');
     res.render('login', { error: null });
 });
 
@@ -43,10 +43,11 @@ router.post('/login', async (req, res) => {
             id: merchant.id,
             username: merchant.username,
             email: merchant.email,
-            store_name: merchant.store_name
+            store_name: merchant.store_name,
+            is_admin: merchant.is_admin || 0
         };
 
-        res.redirect('/dashboard');
+        res.redirect(merchant.is_admin ? '/admin' : '/dashboard');
     } catch (err) {
         console.error(err);
         res.render('login', { error: 'حدث خطأ، يرجى المحاولة مرة أخرى' });
@@ -55,7 +56,7 @@ router.post('/login', async (req, res) => {
 
 // Register page
 router.get('/register', (req, res) => {
-    if (req.session.user) return res.redirect('/dashboard');
+    if (req.session.user) return res.redirect(req.session.user.is_admin ? '/admin' : '/dashboard');
     res.render('register', { error: null });
 });
 

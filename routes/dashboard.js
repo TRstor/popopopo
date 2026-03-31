@@ -24,6 +24,9 @@ const upload = multer({
 router.get('/', async (req, res) => {
     try {
         const userId = req.session.user.id;
+        // Admin should use /admin panel, not merchant dashboard
+        const merchantCheck = await db.getMerchantById(userId);
+        if (merchantCheck && merchantCheck.is_admin) return res.redirect('/admin');
         const [merchant, links, sections, viewCount, notifications, myTickets, products] = await Promise.all([
             db.getMerchantById(userId),
             db.getLinksByMerchant(userId),
