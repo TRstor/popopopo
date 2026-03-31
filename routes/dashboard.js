@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const router = express.Router();
 
@@ -10,16 +11,16 @@ function requireAuth(req, res, next) {
 }
 router.use(requireAuth);
 
-const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads')),
+    filename: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
-        if (!allowedExts.includes(ext)) return cb(new Error('نوع الملف غير مدعوم'));
-        cb(null, true);
+        const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        if (!allowed.includes(ext)) return cb(new Error('نوع الملف غير مدعوم'));
+        cb(null, `${uuidv4()}${ext}`);
     }
 });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 router.get('/', async (req, res) => {
     try {
@@ -67,18 +68,9 @@ router.post('/settings', upload.fields([
         };
 
         if (req.files) {
-            if (req.files.profile_image) {
-                const f = req.files.profile_image[0];
-                updateData.profile_image = await db.uploadFile(f.buffer, f.originalname, 'profiles');
-            }
-            if (req.files.cover_image) {
-                const f = req.files.cover_image[0];
-                updateData.cover_image = await db.uploadFile(f.buffer, f.originalname, 'covers');
-            }
-            if (req.files.bg_image) {
-                const f = req.files.bg_image[0];
-                updateData.bg_image = await db.uploadFile(f.buffer, f.originalname, 'backgrounds');
-            }
+            if (req.files.profile_image) updateData.profile_image = '/uploads/' + req.files.profile_image[0].filename;
+            if (req.files.cover_image) updateData.cover_image = '/uploads/' + req.files.cover_image[0].filename;
+            if (req.files.bg_image) updateData.bg_image = '/uploads/' + req.files.bg_image[0].filename;
         }
 
         await db.updateMerchant(userId, updateData);
@@ -194,8 +186,7 @@ router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1
         const maxOrder = await db.getMaxProductSortOrder(userId);
         let image = '';
         if (req.files && req.files.product_image) {
-            const f = req.files.product_image[0];
-            image = await db.uploadFile(f.buffer, f.originalname, 'products');
+            image = '/uploads/' + req.files.product_image[0].filename;
         }
         const salla = parseSallaWidget(salla_widget_code);
         await db.createProduct({
@@ -229,8 +220,7 @@ router.post('/products/edit/:id', upload.fields([{ name: 'product_image', maxCou
             updateData.salla_label = salla.label;
         }
         if (req.files && req.files.product_image) {
-            const f = req.files.product_image[0];
-            updateData.image = await db.uploadFile(f.buffer, f.originalname, 'products');
+            updateData.image = '/uploads/' + req.files.product_image[0].filename;
         }
 
         // Verify ownership before update

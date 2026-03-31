@@ -1,19 +1,18 @@
 const admin = require('firebase-admin');
 
 // Initialize Firebase Admin
-const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || (process.env.FIREBASE_PROJECT_ID || 'linkin1-app') + '.firebasestorage.app';
 let serviceAccount;
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({ credential: admin.credential.cert(serviceAccount), storageBucket });
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    admin.initializeApp({ credential: admin.credential.applicationDefault(), storageBucket });
+    admin.initializeApp({ credential: admin.credential.applicationDefault() });
 } else {
     try {
         serviceAccount = require('./serviceAccountKey.json');
-        admin.initializeApp({ credential: admin.credential.cert(serviceAccount), storageBucket });
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     } catch (e) {
-        admin.initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID || 'linkin1-app', storageBucket });
+        admin.initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID || 'linkin1-app' });
     }
 }
 
@@ -464,33 +463,6 @@ async function getProductByIdAndMerchant(id, merchantId) {
     return data.merchant_id === merchantId ? data : null;
 }
 
-// ===== Firebase Storage helpers =====
-const bucket = admin.storage().bucket();
-
-async function uploadFile(fileBuffer, originalName, folder = 'uploads') {
-    const { v4: uuidv4 } = require('uuid');
-    const path = require('path');
-    const ext = path.extname(originalName).toLowerCase();
-    const filename = `${folder}/${uuidv4()}${ext}`;
-    const file = bucket.file(filename);
-    const token = uuidv4();
-
-    await file.save(fileBuffer, {
-        metadata: {
-            contentType: getContentType(ext),
-            metadata: { firebaseStorageDownloadTokens: token }
-        }
-    });
-
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media&token=${token}`;
-    return publicUrl;
-}
-
-function getContentType(ext) {
-    const types = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
-    return types[ext] || 'application/octet-stream';
-}
-
 module.exports = {
     db, admin,
     createMerchant, getMerchantById, getMerchantByEmail, getMerchantByUsername,
@@ -510,5 +482,4 @@ module.exports = {
     createProduct, getProductsByMerchant, getActiveProductsByMerchant,
     updateProduct, deleteProductByIdAndMerchant, toggleProductActive,
     getMaxProductSortOrder, deleteProductsByMerchant, getProductByIdAndMerchant,
-    uploadFile,
 };

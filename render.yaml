@@ -4,12 +4,14 @@ services:
     runtime: node
     buildCommand: npm install
     startCommand: node server.js
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: SESSION_SECRET
         generateValue: true
       - key: FIREBASE_SERVICE_ACCOUNT
-        sync: false
-      - key: FIREBASE_STORAGE_BUCKET
         sync: false
