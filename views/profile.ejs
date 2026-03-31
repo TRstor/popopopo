@@ -34,6 +34,13 @@
     </style>
 </head>
 <body>
+    <% if (typeof isPreview !== 'undefined' && isPreview) { %>
+    <div class="preview-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#8B5CF6;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-family:Tajawal,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
+        <span><i class="fas fa-eye" style="margin-left:6px"></i> وضع المعاينة — هذا ما يراه الزوار</span>
+        <a href="/dashboard" style="color:#fff;background:rgba(255,255,255,0.2);padding:5px 12px;border-radius:20px;text-decoration:none;font-size:13px"><i class="fas fa-arrow-right" style="margin-left:4px"></i> العودة للوحة</a>
+    </div>
+    <style>body { padding-top: 44px; }</style>
+    <% } %>
     <div class="profile-page">
         <div class="brand-top">
             <span>Link<span class="brand-highlight">in1</span></span>
@@ -55,16 +62,25 @@
                     </div>
                 <% } %>
             </div>
-            <h1 class="profile-name">
+            <h1 class="profile-name" id="profile-store-name"
+                data-ar="<%= merchant.store_name %>"
+                data-en="<%= merchant.store_name_en || merchant.store_name %>">
                 <% if (merchant.is_verified) { %><i class="fas fa-check-circle verified-icon"></i> <% } %>
                 <%= merchant.store_name %>
             </h1>
             <% if (merchant.store_desc) { %>
-                <p class="profile-desc"><%= merchant.store_desc %></p>
+                <p class="profile-desc" id="profile-store-desc"
+                   data-ar="<%= merchant.store_desc %>"
+                   data-en="<%= merchant.store_desc_en || merchant.store_desc %>">
+                    <%= merchant.store_desc %>
+                </p>
             <% } %>
 
             <div class="profile-actions">
                 <button class="share-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> مشاركة</button>
+                <% if (merchant.store_name_en || merchant.store_desc_en) { %>
+                <button class="lang-toggle-btn" id="lang-toggle" onclick="toggleLang()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:inherit;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:1px">EN</button>
+                <% } %>
                 <span class="view-count"><i class="fas fa-eye"></i> <%= viewCount %></span>
             </div>
         </div>
@@ -286,6 +302,41 @@
         document.getElementById('product-preview-modal').classList.remove('show');
         document.body.style.overflow = '';
     }
+
+    // #95 Language toggle (AR / EN)
+    (function() {
+        const storageKey = 'profile_lang_<%= merchant.username %>';
+        const savedLang = localStorage.getItem(storageKey) || 'ar';
+
+        function applyLang(lang) {
+            const html = document.documentElement;
+            const btn = document.getElementById('lang-toggle');
+            if (lang === 'en') {
+                html.setAttribute('lang', 'en');
+                html.setAttribute('dir', 'ltr');
+                if (btn) btn.textContent = 'ع';
+            } else {
+                html.setAttribute('lang', 'ar');
+                html.setAttribute('dir', 'rtl');
+                if (btn) btn.textContent = 'EN';
+            }
+            document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+                const val = lang === 'en' ? el.dataset.en : el.dataset.ar;
+                // preserve child elements (like verified icon)
+                const icon = el.querySelector('i');
+                el.textContent = val;
+                if (icon) el.prepend(icon);
+            });
+            localStorage.setItem(storageKey, lang);
+        }
+
+        window.toggleLang = function() {
+            const current = localStorage.getItem(storageKey) || 'ar';
+            applyLang(current === 'ar' ? 'en' : 'ar');
+        };
+
+        if (savedLang !== 'ar') applyLang(savedLang);
+    })();
     </script>
 </body>
 </html>

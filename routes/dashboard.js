@@ -48,7 +48,7 @@ router.post('/settings', upload.fields([
     { name: 'bg_image', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { store_name, store_desc, theme_color, theme_style, button_shape, font_family, font_size, card_style } = req.body;
+        const { store_name, store_desc, store_name_en, store_desc_en, theme_color, theme_style, button_shape, font_family, font_size, card_style } = req.body;
         const userId = req.session.user.id;
         const allowedThemes = ['dark','light','blue','pink','emerald','sunset','ocean','rose','midnight','coffee','forest','lavender','cherry','arctic'];
         const allowedShapes = ['rounded','square','pill','circle'];
@@ -62,7 +62,10 @@ router.post('/settings', upload.fields([
         const card = allowedCards.includes(card_style) ? card_style : 'default';
 
         const updateData = {
-            store_name, store_desc: store_desc || '', theme_color: theme_color || '#8B5CF6',
+            store_name, store_desc: store_desc || '',
+            store_name_en: (store_name_en || '').substring(0, 100),
+            store_desc_en: (store_desc_en || '').substring(0, 300),
+            theme_color: theme_color || '#8B5CF6',
             theme_style: style, button_shape: shape, font_family: font, font_size: size, card_style: card
         };
 
@@ -253,6 +256,24 @@ router.post('/products/delete/:id', async (req, res) => {
 router.post('/products/toggle/:id', async (req, res) => {
     await db.toggleProductActive(req.params.id, req.session.user.id);
     res.redirect('/dashboard?msg=product_toggled');
+});
+
+// #99 Preview Mode
+router.get('/preview', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const merchant = await db.getMerchantById(userId);
+        const [links, sections, products, viewCount] = await Promise.all([
+            db.getLinksByMerchant(userId),
+            db.getSectionsByMerchant(userId),
+            db.getActiveProductsByMerchant(userId),
+            db.countPageViews(userId)
+        ]);
+        res.render('profile', { merchant, links, sections, products, viewCount, isPreview: true });
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard');
+    }
 });
 
 module.exports = router;
