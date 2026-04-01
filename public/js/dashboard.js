@@ -63,7 +63,7 @@ async function applyPreset(presetNum, el) {
     try {
         const res = await fetch('/api/preset/apply', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrfToken },
             body: JSON.stringify({ preset: presetNum })
         });
         if (res.ok) {
@@ -310,7 +310,7 @@ document.getElementById('edit-form').addEventListener('submit', async (e) => {
     };
     const res = await fetch('/api/links/update/' + id, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrfToken },
         body: JSON.stringify(data)
     });
     if (res.ok) {
@@ -366,7 +366,7 @@ async function saveOrder() {
     const order = Array.from(cards).map(c => parseInt(c.dataset.id));
     await fetch('/api/links/reorder', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrfToken },
         body: JSON.stringify({ order })
     });
     const iframe = document.getElementById('preview-iframe');
@@ -502,7 +502,7 @@ async function saveProductOrder() {
     const order = Array.from(cards).map(c => parseInt(c.dataset.id));
     await fetch('/api/products/reorder', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrfToken },
         body: JSON.stringify({ order })
     });
     const iframe = document.getElementById('preview-iframe');

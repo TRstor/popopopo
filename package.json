@@ -21,6 +21,8 @@
   "homepage": "https://github.com/TRstor/popopopo#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^4.0.3",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",

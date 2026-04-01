@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 </head>
 <body>
     <div class="dashboard-layout">
@@ -951,5 +952,20 @@
     </div>
 
     <script src="/js/dashboard.js"></script>
+    <script>
+    // Auto-inject CSRF token into all POST forms
+    (function() {
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(form => {
+            if (!form.querySelector('input[name="_csrf"]')) {
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = '_csrf'; input.value = token;
+                form.prepend(input);
+            }
+        });
+        // Store token globally for fetch calls
+        window.csrfToken = token;
+    })();
+    </script>
 </body>
 </html>

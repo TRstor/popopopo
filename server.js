@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const FirestoreStore = require('firestore-store')(session);
+const crypto = require('crypto');
 const path = require('path');
 const dbModule = require('./db');
 const authRoutes = require('./routes/auth');
@@ -39,6 +40,23 @@ app.set('views', path.join(__dirname, 'views'));
 // Auth middleware helper
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
+
+    // Generate CSRF token if not exists
+    if (!req.session.csrfToken) {
+        req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+    }
+    res.locals.csrfToken = req.session.csrfToken;
+    next();
+});
+
+// CSRF validation for all POST/PUT/DELETE requests
+app.use((req, res, next) => {
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+
+    const token = req.body._csrf || req.headers['x-csrf-token'];
+    if (!token || token !== req.session.csrfToken) {
+        return res.status(403).send('CSRF token invalid - طلب غير مصرح');
+    }
     next();
 });
 
