@@ -1,6 +1,6 @@
 <a href="<%= link.url %>" 
    class="profile-link size-<%= link.size || 'full' %> shape-<%= merchant.button_shape || 'rounded' %><%= link.border_style && link.border_style !== 'none' ? ' border-' + link.border_style : '' %>" 
-   target="_blank" rel="noopener noreferrer" 
+   target="_blank" rel="noopener noreferrer nofollow" 
    data-bg="<%= link.gradient || link.color %>"
    <% if (link.gradient) { %>data-gradient="<%= link.gradient %>"<% } %>
    data-link-id="<%= link.id %>">

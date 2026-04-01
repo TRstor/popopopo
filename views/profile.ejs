@@ -123,10 +123,16 @@
             <% if (productCategories.length > 0) { %>
             <div class="product-filter-bar">
                 <button class="filter-btn active" onclick="filterProducts('all', this)">الكل</button>
-                <% productCategories.forEach(cat => { %>
-                    <button class="filter-btn" onclick="filterProducts('<%= cat %>', this)"><%= cat %></button>
+                <% productCategories.forEach((cat, idx) => { %>
+                    <button class="filter-btn" data-cat-idx="<%= idx %>" onclick="filterProducts(this.dataset.catVal, this)"><%= cat %></button>
                 <% }) %>
             </div>
+            <script>
+            // Set category values safely via JS instead of inline
+            <% productCategories.forEach((cat, idx) => { %>
+            document.querySelector('[data-cat-idx="<%= idx %>"]').dataset.catVal = <%= JSON.stringify(cat) %>;
+            <% }) %>
+            </script>
             <% } %>
             <div class="products-grid">
                 <% activeProducts.forEach(product => { %>
@@ -290,8 +296,12 @@
             ppOld.style.display = 'none';
         }
         const imgDiv = document.getElementById('pp-image');
+        imgDiv.innerHTML = '';
         if (btn.dataset.image) {
-            imgDiv.innerHTML = '<img src="' + btn.dataset.image + '" alt="">';
+            const img = document.createElement('img');
+            img.src = btn.dataset.image;
+            img.alt = '';
+            imgDiv.appendChild(img);
         } else {
             imgDiv.innerHTML = '<div class="product-image-placeholder"><i class="fas fa-image"></i></div>';
         }

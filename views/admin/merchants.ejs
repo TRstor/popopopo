@@ -69,7 +69,7 @@
                                 <!-- View -->
                                 <a href="/admin/merchants/<%= m.id %>/view" class="admin-btn info" title="عرض التفاصيل"><i class="fas fa-eye"></i></a>
                                 <!-- Edit -->
-                                <button class="admin-btn warning" title="تعديل" onclick="openEditMerchant({id:<%= m.id %>,store_name:'<%= m.store_name.replace(/'/g, "\\'") %>',email:'<%= m.email %>',username:'<%= m.username %>'})"><i class="fas fa-pen"></i></button>
+                                <button class="admin-btn warning" title="تعديل" data-merchant-b64="<%= Buffer.from(JSON.stringify({id:m.id,store_name:m.store_name,email:m.email,username:m.username})).toString('base64') %>" onclick="openEditMerchant(JSON.parse(atob(this.dataset.merchantB64)))"><i class="fas fa-pen"></i></button>
                                 <!-- Ban/Unban -->
                                 <% if (m.is_banned) { %>
                                 <form method="POST" action="/admin/merchants/<%= m.id %>/unban" style="display:inline">

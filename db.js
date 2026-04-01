@@ -30,19 +30,121 @@ async function getNextId(collectionName) {
     });
 }
 
+// ===== XSS Sanitization helpers =====
+function stripHtml(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.replace(/[<>]/g, c => c === '<' ? '&lt;' : '&gt;');
+}
+
+function sanitizeUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    // Allow only safe protocols
+    if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) return trimmed;
+    // Block javascript:, data:, vbscript:, etc.
+    if (/^[a-z]+:/i.test(trimmed)) return '';
+    // Relative URLs or protocol-less
+    return trimmed;
+}
+
+function sanitizeColor(val) {
+    if (!val || typeof val !== 'string') return '';
+    // Allow only valid CSS colors: hex, rgb(), hsl(), named colors
+    if (/^#[0-9a-fA-F]{3,8}$/.test(val)) return val;
+    if (/^(rgb|hsl)a?\([0-9,.\s%]+\)$/.test(val)) return val;
+    if (/^[a-zA-Z]{3,20}$/.test(val)) return val;
+    return '';
+}
+
+function sanitizeGradient(val) {
+    if (!val || typeof val !== 'string') return '';
+    // Allow only gradients like linear-gradient(...)
+    if (/^(linear|radial)-gradient\([^){}]*\)$/.test(val)) return val;
+    return '';
+}
+
+function sanitizeCssValue(val) {
+    if (!val || typeof val !== 'string') return '';
+    // Remove anything that could be CSS injection
+    return val.replace(/[;{}()\\<>"']/g, '');
+}
+
+async function logSanitization(merchantId, field, originalValue, sanitizedValue) {
+    if (originalValue === sanitizedValue) return;
+    try {
+        const now = new Date().toISOString();
+        await db.collection('sanitization_log').add({
+            merchant_id: merchantId || 0,
+            field,
+            original_value: String(originalValue).substring(0, 500),
+            sanitized_value: String(sanitizedValue).substring(0, 500),
+            created_at: now
+        });
+    } catch (e) {
+        console.error('Sanitization log error:', e.message);
+    }
+}
+
+function sanitizeTextFields(data, merchantId) {
+    const textFields = ['store_name', 'store_desc', 'store_name_en', 'store_desc_en', 'title', 'subject', 'message', 'description', 'badge', 'category', 'salla_label'];
+    const urlFields = ['url', 'salla_url'];
+    const colorFields = ['color', 'theme_color'];
+    const gradientFields = ['gradient'];
+
+    const cleaned = { ...data };
+    for (const field of textFields) {
+        if (cleaned[field] !== undefined && typeof cleaned[field] === 'string') {
+            const original = cleaned[field];
+            cleaned[field] = stripHtml(original);
+            if (original !== cleaned[field]) {
+                logSanitization(merchantId, field, original, cleaned[field]);
+            }
+        }
+    }
+    for (const field of urlFields) {
+        if (cleaned[field] !== undefined && typeof cleaned[field] === 'string') {
+            const original = cleaned[field];
+            cleaned[field] = sanitizeUrl(original);
+            if (original !== cleaned[field]) {
+                logSanitization(merchantId, field, original, cleaned[field]);
+            }
+        }
+    }
+    for (const field of colorFields) {
+        if (cleaned[field] !== undefined && typeof cleaned[field] === 'string') {
+            const original = cleaned[field];
+            cleaned[field] = sanitizeColor(original);
+            if (original !== cleaned[field]) {
+                logSanitization(merchantId, field, original, cleaned[field]);
+            }
+        }
+    }
+    for (const field of gradientFields) {
+        if (cleaned[field] !== undefined && typeof cleaned[field] === 'string') {
+            const original = cleaned[field];
+            cleaned[field] = sanitizeGradient(original);
+            if (original !== cleaned[field]) {
+                logSanitization(merchantId, field, original, cleaned[field]);
+            }
+        }
+    }
+    return cleaned;
+}
+
 // ===== Merchant helpers =====
 async function createMerchant(data) {
     const id = await getNextId('merchants');
+    const clean = sanitizeTextFields(data, id);
     const now = new Date().toISOString();
     const merchantData = {
-        id, username: data.username, email: data.email, password: data.password,
-        store_name: data.store_name, store_desc: data.store_desc || '',
-        profile_image: data.profile_image || '', cover_image: data.cover_image || '',
-        bg_image: data.bg_image || '', theme_color: data.theme_color || '#8B5CF6',
-        theme_style: data.theme_style || 'dark', button_shape: data.button_shape || 'rounded',
-        font_family: data.font_family || 'Tajawal', font_size: data.font_size || 'medium',
-        card_style: data.card_style || 'default', is_verified: data.is_verified || 0,
-        is_banned: data.is_banned || 0, is_admin: data.is_admin || 0, created_at: now
+        id, username: clean.username, email: clean.email, password: clean.password,
+        store_name: clean.store_name, store_desc: clean.store_desc || '',
+        profile_image: clean.profile_image || '', cover_image: clean.cover_image || '',
+        bg_image: clean.bg_image || '', theme_color: clean.theme_color || '#8B5CF6',
+        theme_style: clean.theme_style || 'dark', button_shape: clean.button_shape || 'rounded',
+        font_family: clean.font_family || 'Tajawal', font_size: clean.font_size || 'medium',
+        card_style: clean.card_style || 'default', is_verified: clean.is_verified || 0,
+        is_banned: clean.is_banned || 0, is_admin: clean.is_admin || 0, created_at: now
     };
     await db.collection('merchants').doc(String(id)).set(merchantData);
     return { lastInsertRowid: id, ...merchantData };
@@ -77,7 +179,8 @@ async function getMerchantByEmailOrUsername(email, username) {
 }
 
 async function updateMerchant(id, data) {
-    await db.collection('merchants').doc(String(id)).update(data);
+    const clean = sanitizeTextFields(data, id);
+    await db.collection('merchants').doc(String(id)).update(clean);
 }
 
 async function deleteMerchant(id) {
@@ -146,17 +249,18 @@ async function getFirstMerchant() {
 // ===== Links helpers =====
 async function createLink(data) {
     const id = await getNextId('links');
+    const clean = sanitizeTextFields(data, data.merchant_id);
     const now = new Date().toISOString();
     const linkData = {
-        id, merchant_id: data.merchant_id, title: data.title, url: data.url,
-        icon: data.icon || 'fas fa-link', color: data.color || '#8B5CF6',
-        size: data.size || 'full', description: data.description || '',
-        badge: data.badge || '', show_icon: data.show_icon !== undefined ? data.show_icon : 1,
-        show_text: data.show_text !== undefined ? data.show_text : 1,
-        border_style: data.border_style || 'none', gradient: data.gradient || '',
-        countdown_date: data.countdown_date || '', section_id: data.section_id || 0,
-        sort_order: data.sort_order || 0, is_active: data.is_active !== undefined ? data.is_active : 1,
-        click_count: data.click_count || 0, created_at: now
+        id, merchant_id: clean.merchant_id, title: clean.title, url: sanitizeUrl(clean.url),
+        icon: clean.icon || 'fas fa-link', color: sanitizeColor(clean.color) || '#8B5CF6',
+        size: clean.size || 'full', description: clean.description || '',
+        badge: clean.badge || '', show_icon: clean.show_icon !== undefined ? clean.show_icon : 1,
+        show_text: clean.show_text !== undefined ? clean.show_text : 1,
+        border_style: clean.border_style || 'none', gradient: sanitizeGradient(clean.gradient) || '',
+        countdown_date: clean.countdown_date || '', section_id: clean.section_id || 0,
+        sort_order: clean.sort_order || 0, is_active: clean.is_active !== undefined ? clean.is_active : 1,
+        click_count: clean.click_count || 0, created_at: now
     };
     await db.collection('links').doc(String(id)).set(linkData);
     return { id, ...linkData };
@@ -181,7 +285,8 @@ async function getLinksByMerchant(merchantId) {
 }
 
 async function updateLink(id, data) {
-    await db.collection('links').doc(String(id)).update(data);
+    const clean = sanitizeTextFields(data, 0);
+    await db.collection('links').doc(String(id)).update(clean);
 }
 
 async function deleteLink(id) {
@@ -236,7 +341,8 @@ async function sumClicksByMerchant(merchantId) {
 // ===== Link Sections helpers =====
 async function createSection(data) {
     const id = await getNextId('link_sections');
-    const sectionData = { id, merchant_id: data.merchant_id, title: data.title, sort_order: data.sort_order || 0 };
+    const clean = sanitizeTextFields(data, data.merchant_id);
+    const sectionData = { id, merchant_id: clean.merchant_id, title: clean.title, sort_order: clean.sort_order || 0 };
     await db.collection('link_sections').doc(String(id)).set(sectionData);
     return { id, ...sectionData };
 }
@@ -330,9 +436,10 @@ async function deletePageViewsByMerchant(merchantId) {
 // ===== Tickets helpers =====
 async function createTicket(data) {
     const id = await getNextId('tickets');
+    const clean = sanitizeTextFields(data, data.merchant_id);
     const now = new Date().toISOString();
     const ticketData = {
-        id, merchant_id: data.merchant_id, subject: data.subject, message: data.message,
+        id, merchant_id: clean.merchant_id, subject: clean.subject, message: clean.message,
         status: 'open', admin_reply: '', created_at: now, updated_at: now
     };
     await db.collection('tickets').doc(String(id)).set(ticketData);
@@ -386,8 +493,9 @@ async function deleteTicketsByMerchant(merchantId) {
 // ===== Notifications helpers =====
 async function createNotification(data) {
     const id = await getNextId('notifications');
+    const clean = sanitizeTextFields(data, 0);
     const now = new Date().toISOString();
-    const notifData = { id, title: data.title, message: data.message, created_at: now };
+    const notifData = { id, title: clean.title, message: clean.message, created_at: now };
     await db.collection('notifications').doc(String(id)).set(notifData);
     return { id, ...notifData };
 }
@@ -406,15 +514,16 @@ async function deleteNotification(id) {
 // ===== Products helpers =====
 async function createProduct(data) {
     const id = await getNextId('products');
+    const clean = sanitizeTextFields(data, data.merchant_id);
     const now = new Date().toISOString();
     const productData = {
-        id, merchant_id: data.merchant_id, title: data.title,
-        description: data.description || '', price: data.price || 0,
-        old_price: data.old_price || 0, image: data.image || '',
-        salla_url: data.salla_url || '', salla_store_id: data.salla_store_id || '',
-        salla_product_id: data.salla_product_id || '', salla_label: data.salla_label || '',
-        category: data.category || '', sort_order: data.sort_order || 0,
-        is_active: data.is_active !== undefined ? data.is_active : 1, created_at: now
+        id, merchant_id: clean.merchant_id, title: clean.title,
+        description: clean.description || '', price: clean.price || 0,
+        old_price: clean.old_price || 0, image: clean.image || '',
+        salla_url: sanitizeUrl(clean.salla_url) || '', salla_store_id: clean.salla_store_id || '',
+        salla_product_id: clean.salla_product_id || '', salla_label: clean.salla_label || '',
+        category: clean.category || '', sort_order: clean.sort_order || 0,
+        is_active: clean.is_active !== undefined ? clean.is_active : 1, created_at: now
     };
     await db.collection('products').doc(String(id)).set(productData);
     return { id, ...productData };
@@ -433,7 +542,8 @@ async function getActiveProductsByMerchant(merchantId) {
 }
 
 async function updateProduct(id, data) {
-    await db.collection('products').doc(String(id)).update(data);
+    const clean = sanitizeTextFields(data, 0);
+    await db.collection('products').doc(String(id)).update(clean);
 }
 
 async function deleteProductByIdAndMerchant(id, merchantId) {

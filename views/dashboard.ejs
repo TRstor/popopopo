@@ -142,7 +142,7 @@
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </form>
-                                    <button class="btn-icon edit" data-link='<%- JSON.stringify(link) %>' onclick="openEditModal(JSON.parse(this.dataset.link))" title="تعديل">
+                                    <button class="btn-icon edit" data-link-b64="<%= Buffer.from(JSON.stringify(link)).toString('base64') %>" onclick="openEditModal(JSON.parse(atob(this.dataset.linkB64)))" title="تعديل">
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="/dashboard/links/delete/<%= link.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
@@ -205,7 +205,7 @@
                                             <i class="fas fa-<%= product.is_active ? 'eye' : 'eye-slash' %>"></i>
                                         </button>
                                     </form>
-                                    <button class="btn-icon edit" data-product='<%- JSON.stringify(product) %>' onclick="openEditProductModal(JSON.parse(this.dataset.product))" title="تعديل">
+                                    <button class="btn-icon edit" data-product-b64="<%= Buffer.from(JSON.stringify(product)).toString('base64') %>" onclick="openEditProductModal(JSON.parse(atob(this.dataset.productB64)))" title="تعديل">
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="/dashboard/products/delete/<%= product.id %>" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف المنتج؟')">
