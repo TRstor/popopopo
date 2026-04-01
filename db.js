@@ -515,6 +515,69 @@ async function deleteFile(fileId) {
     }
 }
 
+// ===== Login Rate Limiting (stored in Firestore) =====
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_BAN_MINUTES = 3;
+
+async function getLoginAttempts(email) {
+    const docId = email.toLowerCase().replace(/[^a-z0-9@._-]/g, '_');
+    const doc = await db.collection('login_attempts').doc(docId).get();
+    if (!doc.exists) return null;
+    return doc.data();
+}
+
+async function recordFailedLogin(email) {
+    const docId = email.toLowerCase().replace(/[^a-z0-9@._-]/g, '_');
+    const ref = db.collection('login_attempts').doc(docId);
+    const doc = await ref.get();
+    const now = new Date().toISOString();
+
+    if (doc.exists) {
+        const data = doc.data();
+        // If ban expired, reset
+        if (data.banned_until && new Date(data.banned_until) <= new Date()) {
+            await ref.set({ email: email.toLowerCase(), attempts: 1, last_attempt: now, banned_until: '' });
+            return { attempts: 1, banned: false, remaining: LOGIN_MAX_ATTEMPTS - 1 };
+        }
+        const newAttempts = (data.attempts || 0) + 1;
+        const updateData = { attempts: newAttempts, last_attempt: now };
+        if (newAttempts >= LOGIN_MAX_ATTEMPTS) {
+            const banUntil = new Date(Date.now() + LOGIN_BAN_MINUTES * 60 * 1000).toISOString();
+            updateData.banned_until = banUntil;
+            updateData.attempts = 0;
+            await ref.update(updateData);
+            return { attempts: newAttempts, banned: true, remaining: 0, banned_until: banUntil };
+        }
+        await ref.update(updateData);
+        return { attempts: newAttempts, banned: false, remaining: LOGIN_MAX_ATTEMPTS - newAttempts };
+    } else {
+        await ref.set({ email: email.toLowerCase(), attempts: 1, last_attempt: now, banned_until: '' });
+        return { attempts: 1, banned: false, remaining: LOGIN_MAX_ATTEMPTS - 1 };
+    }
+}
+
+async function checkLoginBan(email) {
+    const data = await getLoginAttempts(email);
+    if (!data) return { banned: false, attempts: 0, remaining: LOGIN_MAX_ATTEMPTS };
+    if (data.banned_until && new Date(data.banned_until) > new Date()) {
+        const remainMs = new Date(data.banned_until) - new Date();
+        const remainMin = Math.ceil(remainMs / 60000);
+        return { banned: true, remaining: 0, minutes_left: remainMin };
+    }
+    // If ban expired, treat as fresh
+    if (data.banned_until && new Date(data.banned_until) <= new Date()) {
+        return { banned: false, attempts: 0, remaining: LOGIN_MAX_ATTEMPTS };
+    }
+    return { banned: false, attempts: data.attempts || 0, remaining: LOGIN_MAX_ATTEMPTS - (data.attempts || 0) };
+}
+
+async function clearLoginAttempts(email) {
+    const docId = email.toLowerCase().replace(/[^a-z0-9@._-]/g, '_');
+    const ref = db.collection('login_attempts').doc(docId);
+    const doc = await ref.get();
+    if (doc.exists) await ref.delete();
+}
+
 module.exports = {
     db, admin,
     createMerchant, getMerchantById, getMerchantByEmail, getMerchantByUsername,
@@ -535,4 +598,5 @@ module.exports = {
     updateProduct, deleteProductByIdAndMerchant, toggleProductActive,
     getMaxProductSortOrder, deleteProductsByMerchant, getProductByIdAndMerchant,
     saveFile, getFile, deleteFile,
+    checkLoginBan, recordFailedLogin, clearLoginAttempts,
 };

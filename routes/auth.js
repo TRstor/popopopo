@@ -33,11 +33,28 @@ router.post('/login', async (req, res) => {
     }
 
     try {
+        // Check if email is temporarily banned
+        const banStatus = await db.checkLoginBan(email);
+        if (banStatus.banned) {
+            return res.render('login', { error: `تم حظر تسجيل الدخول مؤقتاً. حاول بعد ${banStatus.minutes_left} دقيقة` });
+        }
+
         const merchant = await db.getMerchantByEmail(email);
 
         if (!merchant || !bcrypt.compareSync(password, merchant.password)) {
+            // Record failed attempt
+            const result = await db.recordFailedLogin(email);
+            if (result.banned) {
+                return res.render('login', { error: 'تم تجاوز عدد المحاولات المسموحة. حاول بعد 3 دقائق' });
+            }
+            if (result.remaining <= 2) {
+                return res.render('login', { error: `البريد الإلكتروني أو كلمة المرور غير صحيحة. باقي ${result.remaining} محاولة` });
+            }
             return res.render('login', { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
         }
+
+        // Successful login - clear attempts
+        await db.clearLoginAttempts(email);
 
         req.session.user = {
             id: merchant.id,
