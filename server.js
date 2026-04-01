@@ -46,6 +46,22 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Inactivity timeout (15 minutes)
+app.use((req, res, next) => {
+    if (req.session && req.session.user) {
+        const now = Date.now();
+        const lastActivity = req.session.lastActivity || now;
+        const fifteenMinutes = 15 * 60 * 1000;
+        if (now - lastActivity > fifteenMinutes) {
+            return req.session.destroy(() => {
+                res.redirect('/login');
+            });
+        }
+        req.session.lastActivity = now;
+    }
+    next();
+});
+
 // Auth middleware helper
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
