@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
+    <button class="admin-menu-btn" onclick="document.querySelector('.admin-sidebar').classList.toggle('open');document.querySelector('.admin-sidebar-overlay').classList.toggle('open');"><i class="fas fa-bars"></i></button>
+    <div class="admin-sidebar-overlay" onclick="document.querySelector('.admin-sidebar').classList.remove('open');this.classList.remove('open');"></div>
     <div class="admin-layout">
         <aside class="admin-sidebar">
             <div class="admin-logo"><i class="fas fa-shield-alt"></i> إدارة Linkin1</div>
