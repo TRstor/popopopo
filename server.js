@@ -78,7 +78,11 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
 
-    const token = req.body._csrf || req.headers['x-csrf-token'];
+    // Skip CSRF check for multipart/form-data (multer hasn't parsed body yet)
+    // CSRF will be verified inside route handlers after multer processes the body
+    if (req.is('multipart/form-data')) return next();
+
+    const token = (req.body && req.body._csrf) || req.headers['x-csrf-token'];
     if (!token || token !== req.session.csrfToken) {
         return res.status(403).send('CSRF token invalid - طلب غير مصرح');
     }

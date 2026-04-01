@@ -51,6 +51,11 @@ router.post('/settings', upload.fields([
     { name: 'bg_image', maxCount: 1 }
 ]), async (req, res) => {
     try {
+        // CSRF check after multer parses multipart body
+        const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
+        if (!csrfToken || csrfToken !== req.session.csrfToken) {
+            return res.status(403).send('CSRF token invalid - طلب غير مصرح');
+        }
         const { store_name, store_desc, store_name_en, store_desc_en, theme_color, theme_style, button_shape, font_family, font_size, card_style } = req.body;
         const userId = req.session.user.id;
         const allowedThemes = ['dark','light','blue','pink','emerald','sunset','ocean','rose','midnight','coffee','forest','lavender','cherry','arctic'];
@@ -195,6 +200,11 @@ function parseSallaWidget(code) {
 // ===== Products CRUD =====
 router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1 }]), async (req, res) => {
     try {
+        // CSRF check after multer parses multipart body
+        const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
+        if (!csrfToken || csrfToken !== req.session.csrfToken) {
+            return res.status(403).send('CSRF token invalid - طلب غير مصرح');
+        }
         const { title, description, price, old_price, salla_url, salla_widget_code, category } = req.body;
         const userId = req.session.user.id;
         const maxOrder = await db.getMaxProductSortOrder(userId);
@@ -220,6 +230,11 @@ router.post('/products/add', upload.fields([{ name: 'product_image', maxCount: 1
 
 router.post('/products/edit/:id', upload.fields([{ name: 'product_image', maxCount: 1 }]), async (req, res) => {
     try {
+        // CSRF check after multer parses multipart body
+        const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
+        if (!csrfToken || csrfToken !== req.session.csrfToken) {
+            return res.status(403).send('CSRF token invalid - طلب غير مصرح');
+        }
         const { title, description, price, old_price, salla_url, salla_widget_code, category } = req.body;
         const userId = req.session.user.id;
 
