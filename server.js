@@ -89,6 +89,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// Favicon
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Routes
 app.use('/', authRoutes);
 app.use('/dashboard', dashboardRoutes);
