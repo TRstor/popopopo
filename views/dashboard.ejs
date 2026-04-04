@@ -288,17 +288,6 @@
                         <textarea name="store_desc" rows="3" placeholder="اكتب وصفاً مختصراً لمتجرك"><%= merchant.store_desc || '' %></textarea>
                     </div>
 
-                    <!-- #95 EN fields -->
-                    <div class="form-group">
-                        <label><i class="fas fa-language" style="margin-left:6px"></i>اسم المتجر بالإنجليزي <small style="color:#888;font-weight:normal">(اختياري)</small></label>
-                        <input type="text" name="store_name_en" value="<%= merchant.store_name_en || '' %>" placeholder="Store name in English" dir="ltr" style="text-align:left">
-                        <small style="color:#aaa;font-size:11px">يظهر زر تبديل اللغة للزوار عند ملء هذا الحقل</small>
-                    </div>
-                    <div class="form-group">
-                        <label>وصف المتجر بالإنجليزي <small style="color:#888;font-weight:normal">(اختياري)</small></label>
-                        <textarea name="store_desc_en" rows="3" placeholder="Store description in English..." dir="ltr" style="text-align:left"><%= merchant.store_desc_en || '' %></textarea>
-                    </div>
-
                     <div class="form-group">
                         <label>اللون الرئيسي</label>
                         <div class="color-row">

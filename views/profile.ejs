@@ -62,25 +62,19 @@
                     </div>
                 <% } %>
             </div>
-            <h1 class="profile-name" id="profile-store-name"
-                data-ar="<%= merchant.store_name %>"
-                data-en="<%= merchant.store_name_en || merchant.store_name %>">
+            <h1 class="profile-name" id="profile-store-name">
                 <% if (merchant.is_verified) { %><i class="fas fa-check-circle verified-icon"></i> <% } %>
                 <%= merchant.store_name %>
             </h1>
             <% if (merchant.store_desc) { %>
-                <p class="profile-desc" id="profile-store-desc"
-                   data-ar="<%= merchant.store_desc %>"
-                   data-en="<%= merchant.store_desc_en || merchant.store_desc %>">
+                <p class="profile-desc" id="profile-store-desc">
                     <%= merchant.store_desc %>
                 </p>
             <% } %>
 
             <div class="profile-actions">
                 <button class="share-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> مشاركة</button>
-                <% if (merchant.store_name_en || merchant.store_desc_en) { %>
-                <button class="lang-toggle-btn" id="lang-toggle" onclick="toggleLang()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:inherit;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:1px">EN</button>
-                <% } %>
+                <button class="lang-toggle-btn" id="lang-toggle" onclick="translatePage()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:inherit;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:1px">EN</button>
                 <span class="view-count"><i class="fas fa-eye"></i> <%= viewCount %></span>
             </div>
         </div>
@@ -313,39 +307,120 @@
         document.body.style.overflow = '';
     }
 
-    // #95 Language toggle (AR / EN)
+    // Auto-translate (AR ↔ EN)
     (function() {
-        const storageKey = 'profile_lang_<%= merchant.username %>';
-        const savedLang = localStorage.getItem(storageKey) || 'ar';
+        let isEnglish = false;
+        const originalTexts = new Map();
+        const translatedTexts = new Map();
+        let translating = false;
 
-        function applyLang(lang) {
-            const html = document.documentElement;
-            const btn = document.getElementById('lang-toggle');
-            if (lang === 'en') {
-                html.setAttribute('lang', 'en');
-                html.setAttribute('dir', 'ltr');
-                if (btn) btn.textContent = 'ع';
-            } else {
-                html.setAttribute('lang', 'ar');
-                html.setAttribute('dir', 'rtl');
-                if (btn) btn.textContent = 'EN';
-            }
-            document.querySelectorAll('[data-ar][data-en]').forEach(el => {
-                const val = lang === 'en' ? el.dataset.en : el.dataset.ar;
-                // preserve child elements (like verified icon)
-                const icon = el.querySelector('i');
-                el.textContent = val;
-                if (icon) el.prepend(icon);
-            });
-            localStorage.setItem(storageKey, lang);
+        function getTextElements() {
+            return document.querySelectorAll(
+                '.profile-name, .profile-desc, .section-header-row span, ' +
+                '.profile-link .link-text span, .profile-link .link-desc, ' +
+                '.product-title, .product-description, .product-buy-btn, ' +
+                '.share-btn, .profile-tab, .filter-btn, .powered-by a'
+            );
         }
 
-        window.toggleLang = function() {
-            const current = localStorage.getItem(storageKey) || 'ar';
-            applyLang(current === 'ar' ? 'en' : 'ar');
-        };
+        async function translateTexts(texts) {
+            const unique = [...new Set(texts.filter(t => t.trim()))];
+            const results = {};
+            // Translate in chunks of 10
+            for (let i = 0; i < unique.length; i += 10) {
+                const chunk = unique.slice(i, i + 10);
+                const q = chunk.map(t => encodeURIComponent(t)).join('&q=');
+                try {
+                    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + q);
+                    const data = await res.json();
+                    if (chunk.length === 1) {
+                        results[chunk[0]] = data[0].map(s => s[0]).join('');
+                    } else {
+                        // Multiple q params: response is array of translations
+                        chunk.forEach((text, idx) => {
+                            results[text] = data[0] && data[0][idx] ? data[0][idx][0] : text;
+                        });
+                    }
+                } catch(e) {
+                    chunk.forEach(t => results[t] = t);
+                }
+            }
+            return results;
+        }
 
-        if (savedLang !== 'ar') applyLang(savedLang);
+        window.translatePage = async function() {
+            if (translating) return;
+            const btn = document.getElementById('lang-toggle');
+            const elements = getTextElements();
+
+            if (isEnglish) {
+                // Restore Arabic
+                elements.forEach(el => {
+                    if (originalTexts.has(el)) {
+                        const icon = el.querySelector('i');
+                        el.textContent = originalTexts.get(el);
+                        if (icon) el.prepend(icon);
+                    }
+                });
+                document.documentElement.setAttribute('dir', 'rtl');
+                document.documentElement.setAttribute('lang', 'ar');
+                btn.textContent = 'EN';
+                isEnglish = false;
+                return;
+            }
+
+            // Translate to English
+            translating = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            // Save originals
+            const textsToTranslate = [];
+            elements.forEach(el => {
+                const text = el.textContent.trim();
+                if (!originalTexts.has(el)) originalTexts.set(el, text);
+                if (text && !translatedTexts.has(text)) textsToTranslate.push(text);
+            });
+
+            // Translate only new texts
+            if (textsToTranslate.length > 0) {
+                try {
+                    const q = textsToTranslate.map(t => encodeURIComponent(t)).join('&q=');
+                    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + q);
+                    const data = await res.json();
+                    if (textsToTranslate.length === 1) {
+                        translatedTexts.set(textsToTranslate[0], data[0].map(s => s[0]).join(''));
+                    } else {
+                        // For multiple q params, each sentence is in data[0]
+                        let idx = 0;
+                        textsToTranslate.forEach(text => {
+                            if (data[0] && data[0][idx]) {
+                                translatedTexts.set(text, data[0][idx][0]);
+                            }
+                            idx++;
+                        });
+                    }
+                } catch(e) {
+                    textsToTranslate.forEach(t => translatedTexts.set(t, t));
+                }
+            }
+
+            // Apply translations
+            elements.forEach(el => {
+                const origText = originalTexts.get(el) || el.textContent.trim();
+                const translated = translatedTexts.get(origText);
+                if (translated) {
+                    const icon = el.querySelector('i');
+                    el.textContent = translated;
+                    if (icon) el.prepend(icon);
+                }
+            });
+
+            document.documentElement.setAttribute('dir', 'ltr');
+            document.documentElement.setAttribute('lang', 'en');
+            btn.textContent = 'ع';
+            isEnglish = true;
+            translating = false;
+        };
     })();
     </script>
 </body>
