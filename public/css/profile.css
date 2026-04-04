@@ -682,3 +682,22 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== LTR Mode (English Translation) ===== */
+.translated-en .profile-link.size-full {
+    text-align: center;
+    justify-content: center;
+}
+.translated-en .link-badge {
+    left: auto;
+    right: -2px;
+    border-radius: 0 0 0 8px;
+}
+.translated-en .product-discount-badge {
+    left: auto;
+    right: 8px;
+}
+.translated-en .product-details {
+    text-align: left;
+    direction: ltr;
+}

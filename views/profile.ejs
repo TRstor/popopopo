@@ -368,10 +368,11 @@
                         const icon = el.querySelector('i');
                         el.textContent = originalTexts.get(el);
                         if (icon) el.prepend(icon, ' ');
+                        el.removeAttribute('dir');
+                        el.style.textAlign = '';
                     }
                 });
-                document.documentElement.setAttribute('dir', 'rtl');
-                document.documentElement.setAttribute('lang', 'ar');
+                document.body.classList.remove('translated-en');
                 btn.textContent = 'EN';
                 isEnglish = false;
                 return;
@@ -406,11 +407,12 @@
                     const icon = el.querySelector('i');
                     el.textContent = translatedCache.get(origText);
                     if (icon) el.prepend(icon, ' ');
+                    el.setAttribute('dir', 'ltr');
+                    el.style.textAlign = 'center';
                 }
             });
 
-            document.documentElement.setAttribute('dir', 'ltr');
-            document.documentElement.setAttribute('lang', 'en');
+            document.body.classList.add('translated-en');
             btn.textContent = 'ع';
             isEnglish = true;
             translating = false;
