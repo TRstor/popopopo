@@ -51,7 +51,7 @@
                             <td><%= m.id %></td>
                             <td>
                                 <% if (m.profile_image) { %>
-                                <img src="<%= m.profile_image %>" class="table-avatar">
+                                <img src="<%= m.profile_image %>" class="table-avatar" loading="lazy">
                                 <% } else { %>
                                 <div class="table-avatar-placeholder"><i class="fas fa-user"></i></div>
                                 <% } %>

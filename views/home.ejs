@@ -95,7 +95,7 @@
             <div class="featured-grid">
                 <% featuredMerchants.forEach(m => { %>
                 <a href="/<%= m.username %>" class="featured-card" target="_blank">
-                    <img src="<%= m.profile_image %>" alt="<%= m.store_name %>" class="featured-img">
+                    <img src="<%= m.profile_image %>" alt="<%= m.store_name %>" class="featured-img" loading="lazy">
                     <strong><%= m.store_name %></strong>
                     <small>@<%= m.username %></small>
                 </a>

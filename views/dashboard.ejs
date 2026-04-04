@@ -183,7 +183,7 @@
                                 </div>
                                 <div class="product-thumb">
                                     <% if (product.image) { %>
-                                        <img src="<%= product.image %>" alt="<%= product.title %>">
+                                        <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
                                     <% } else { %>
                                         <i class="fas fa-image"></i>
                                     <% } %>

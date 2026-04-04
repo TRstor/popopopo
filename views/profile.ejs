@@ -144,7 +144,7 @@
                     </button>
                     <div class="product-image">
                         <% if (product.image) { %>
-                            <img src="<%= product.image %>" alt="<%= product.title %>">
+                            <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
                         <% } else { %>
                             <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
                         <% } %>

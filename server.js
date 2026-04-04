@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const session = require('express-session');
 const FirestoreStore = require('firestore-store')(session);
 const crypto = require('crypto');
@@ -12,10 +13,16 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Gzip compression
+app.use(compression());
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '7d',
+    etag: true
+}));
 
 // Security headers
 app.use((req, res, next) => {

@@ -44,7 +44,7 @@
                 <% merchants.forEach(m => { %>
                 <a href="/<%= m.username %>" class="merchant-card">
                     <% if (m.profile_image) { %>
-                        <img src="<%= m.profile_image %>" alt="<%= m.store_name %>">
+                        <img src="<%= m.profile_image %>" alt="<%= m.store_name %>" loading="lazy">
                     <% } else { %>
                         <div class="mc-placeholder"><i class="fas fa-store"></i></div>
                     <% } %>
