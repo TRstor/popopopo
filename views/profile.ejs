@@ -311,41 +311,49 @@
     (function() {
         let isEnglish = false;
         const originalTexts = new Map();
-        const translatedTexts = new Map();
+        const translatedCache = new Map();
         let translating = false;
 
         function getTextElements() {
             return document.querySelectorAll(
                 '.profile-name, .profile-desc, .section-header-row span, ' +
-                '.profile-link .link-text span, .profile-link .link-desc, ' +
+                '.link-title, .link-desc, .link-badge, ' +
                 '.product-title, .product-description, .product-buy-btn, ' +
-                '.share-btn, .profile-tab, .filter-btn, .powered-by a'
+                '.share-btn, .profile-tab, .filter-btn'
             );
         }
 
-        async function translateTexts(texts) {
-            const unique = [...new Set(texts.filter(t => t.trim()))];
-            const results = {};
-            // Translate in chunks of 10
-            for (let i = 0; i < unique.length; i += 10) {
-                const chunk = unique.slice(i, i + 10);
-                const q = chunk.map(t => encodeURIComponent(t)).join('&q=');
-                try {
-                    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + q);
-                    const data = await res.json();
-                    if (chunk.length === 1) {
-                        results[chunk[0]] = data[0].map(s => s[0]).join('');
-                    } else {
-                        // Multiple q params: response is array of translations
-                        chunk.forEach((text, idx) => {
-                            results[text] = data[0] && data[0][idx] ? data[0][idx][0] : text;
-                        });
-                    }
-                } catch(e) {
-                    chunk.forEach(t => results[t] = t);
+        async function translateOne(text) {
+            if (translatedCache.has(text)) return translatedCache.get(text);
+            try {
+                const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + encodeURIComponent(text));
+                const data = await res.json();
+                const translated = data[0].map(s => s[0]).join('');
+                translatedCache.set(text, translated);
+                return translated;
+            } catch(e) {
+                return text;
+            }
+        }
+
+        async function translateBatch(texts) {
+            // Join all texts with newline separator, translate as one request, then split
+            const separator = '\n\n';
+            const joined = texts.join(separator);
+            try {
+                const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + encodeURIComponent(joined));
+                const data = await res.json();
+                const fullTranslation = data[0].map(s => s[0]).join('');
+                const parts = fullTranslation.split(/\n\n/);
+                texts.forEach((text, i) => {
+                    translatedCache.set(text, (parts[i] || text).trim());
+                });
+            } catch(e) {
+                // Fallback: translate one by one
+                for (const text of texts) {
+                    await translateOne(text);
                 }
             }
-            return results;
         }
 
         window.translatePage = async function() {
@@ -359,7 +367,7 @@
                     if (originalTexts.has(el)) {
                         const icon = el.querySelector('i');
                         el.textContent = originalTexts.get(el);
-                        if (icon) el.prepend(icon);
+                        if (icon) el.prepend(icon, ' ');
                     }
                 });
                 document.documentElement.setAttribute('dir', 'rtl');
@@ -373,45 +381,31 @@
             translating = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            // Save originals
+            // Collect unique texts that need translation
             const textsToTranslate = [];
             elements.forEach(el => {
                 const text = el.textContent.trim();
-                if (!originalTexts.has(el)) originalTexts.set(el, text);
-                if (text && !translatedTexts.has(text)) textsToTranslate.push(text);
+                if (text) {
+                    if (!originalTexts.has(el)) originalTexts.set(el, text);
+                    if (!translatedCache.has(text) && !textsToTranslate.includes(text)) {
+                        textsToTranslate.push(text);
+                    }
+                }
             });
 
-            // Translate only new texts
-            if (textsToTranslate.length > 0) {
-                try {
-                    const q = textsToTranslate.map(t => encodeURIComponent(t)).join('&q=');
-                    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + q);
-                    const data = await res.json();
-                    if (textsToTranslate.length === 1) {
-                        translatedTexts.set(textsToTranslate[0], data[0].map(s => s[0]).join(''));
-                    } else {
-                        // For multiple q params, each sentence is in data[0]
-                        let idx = 0;
-                        textsToTranslate.forEach(text => {
-                            if (data[0] && data[0][idx]) {
-                                translatedTexts.set(text, data[0][idx][0]);
-                            }
-                            idx++;
-                        });
-                    }
-                } catch(e) {
-                    textsToTranslate.forEach(t => translatedTexts.set(t, t));
-                }
+            // Translate in batches of 15  
+            for (let i = 0; i < textsToTranslate.length; i += 15) {
+                const batch = textsToTranslate.slice(i, i + 15);
+                await translateBatch(batch);
             }
 
             // Apply translations
             elements.forEach(el => {
-                const origText = originalTexts.get(el) || el.textContent.trim();
-                const translated = translatedTexts.get(origText);
-                if (translated) {
+                const origText = originalTexts.get(el);
+                if (origText && translatedCache.has(origText)) {
                     const icon = el.querySelector('i');
-                    el.textContent = translated;
-                    if (icon) el.prepend(icon);
+                    el.textContent = translatedCache.get(origText);
+                    if (icon) el.prepend(icon, ' ');
                 }
             });
 
