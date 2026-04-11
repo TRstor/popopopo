@@ -1,0 +1,46 @@
+<div class="product-item card-<%= merchant.card_style || 'default' %>" data-category="<%= product.category || '' %>">
+    <% if (product.old_price > 0 && product.old_price > product.price) { %>
+        <span class="product-discount-badge"><%= Math.round((1 - product.price / product.old_price) * 100) %>%-</span>
+    <% } %>
+    <button class="product-preview-btn" onclick="openProductPreview(this)" title="معاينة"
+        data-title="<%= product.title %>"
+        data-description="<%= product.description || '' %>"
+        data-price="<%= product.price %>"
+        data-old-price="<%= product.old_price || 0 %>"
+        data-image="<%= product.image || '' %>">
+        <i class="fas fa-eye"></i>
+    </button>
+    <div class="product-image">
+        <% if (product.image) { %>
+            <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
+        <% } else { %>
+            <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
+        <% } %>
+    </div>
+    <div class="product-details">
+        <h3 class="product-title"><%= product.title %></h3>
+        <% if (product.description) { %>
+            <p class="product-description"><%= product.description %></p>
+        <% } %>
+        <div class="product-pricing">
+            <span class="product-current-price"><%= product.price %> ر.س</span>
+            <% if (product.old_price > 0) { %>
+                <span class="product-was-price"><%= product.old_price %> ر.س</span>
+            <% } %>
+        </div>
+        <% if (product.salla_store_id && product.salla_product_id) { %>
+            <div class="salla-widget-wrap">
+                <salla-mini-checkout-widget
+                    store-id="<%= product.salla_store_id %>"
+                    products="[<%= product.salla_product_id %>]"
+                    language="ar"
+                    label="<%= product.salla_label || 'اشتري الآن' %>"
+                ></salla-mini-checkout-widget>
+            </div>
+        <% } else if (product.salla_url) { %>
+            <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="product-buy-btn">
+                <i class="fas fa-shopping-cart"></i> اشتري الآن
+            </a>
+        <% } %>
+    </div>
+</div>

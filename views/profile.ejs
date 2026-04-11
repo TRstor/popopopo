@@ -114,67 +114,82 @@
 
         <div class="tab-content" id="tab-products" style="display:none">
             <% const productCategories = [...new Set(activeProducts.map(p => p.category).filter(c => c))]; %>
-            <% if (productCategories.length > 0) { %>
-            <div class="product-filter-bar">
-                <button class="filter-btn active" onclick="filterProducts('all', this)">الكل</button>
-                <% productCategories.forEach((cat, idx) => { %>
-                    <button class="filter-btn" data-cat-idx="<%= idx %>" onclick="filterProducts(this.dataset.catVal, this)"><%= cat %></button>
-                <% }) %>
-            </div>
-            <script>
-            // Set category values safely via JS instead of inline
-            <% productCategories.forEach((cat, idx) => { %>
-            document.querySelector('[data-cat-idx="<%= idx %>"]').dataset.catVal = <%= JSON.stringify(cat) %>;
-            <% }) %>
-            </script>
-            <% } %>
-            <div class="products-grid">
-                <% activeProducts.forEach(product => { %>
-                <div class="product-item card-<%= merchant.card_style || 'default' %>" data-category="<%= product.category || '' %>">
-                    <% if (product.old_price > 0 && product.old_price > product.price) { %>
-                        <span class="product-discount-badge"><%= Math.round((1 - product.price / product.old_price) * 100) %>%-</span>
-                    <% } %>
-                    <button class="product-preview-btn" onclick="openProductPreview(this)" title="معاينة"
-                        data-title="<%= product.title %>"
-                        data-description="<%= product.description || '' %>"
-                        data-price="<%= product.price %>"
-                        data-old-price="<%= product.old_price || 0 %>"
-                        data-image="<%= product.image || '' %>">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <div class="product-image">
-                        <% if (product.image) { %>
-                            <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
-                        <% } else { %>
-                            <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
-                        <% } %>
-                    </div>
-                    <div class="product-details">
-                        <h3 class="product-title"><%= product.title %></h3>
-                        <% if (product.description) { %>
-                            <p class="product-description"><%= product.description %></p>
-                        <% } %>
-                        <div class="product-pricing">
-                            <span class="product-current-price"><%= product.price %> ر.س</span>
-                            <% if (product.old_price > 0) { %>
-                                <span class="product-was-price"><%= product.old_price %> ر.س</span>
+            <% const uncategorized = activeProducts.filter(p => !p.category); %>
+
+            <!-- Categories View -->
+            <div id="categories-view">
+                <% if (productCategories.length > 0) { %>
+                <div class="categories-grid">
+                    <% productCategories.forEach((cat, idx) => { %>
+                    <% const catProducts = activeProducts.filter(p => p.category === cat); %>
+                    <% const catImage = catProducts.find(p => p.image); %>
+                    <div class="category-banner card-<%= merchant.card_style || 'default' %>" onclick="openCategory(this.dataset.catName)" data-cat-idx="<%= idx %>">
+                        <div class="category-banner-bg">
+                            <% if (catImage && catImage.image) { %>
+                                <img src="<%= catImage.image %>" alt="" loading="lazy">
                             <% } %>
+                            <div class="category-banner-overlay"></div>
                         </div>
-                        <% if (product.salla_store_id && product.salla_product_id) { %>
-                            <div class="salla-widget-wrap">
-                                <salla-mini-checkout-widget
-                                    store-id="<%= product.salla_store_id %>"
-                                    products="[<%= product.salla_product_id %>]"
-                                    language="ar"
-                                    label="<%= product.salla_label || 'اشتري الآن' %>"
-                                ></salla-mini-checkout-widget>
-                            </div>
-                        <% } else if (product.salla_url) { %>
-                            <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="product-buy-btn">
-                                <i class="fas fa-shopping-cart"></i> اشتري الآن
-                            </a>
-                        <% } %>
+                        <div class="category-banner-content">
+                            <div class="category-icon"><i class="fas fa-box-open"></i></div>
+                            <h3 class="category-name"><%= cat %></h3>
+                            <span class="category-count"><%= catProducts.length %> منتج</span>
+                        </div>
+                        <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                     </div>
+                    <% }) %>
+
+                    <% if (uncategorized.length > 0) { %>
+                    <div class="category-banner card-<%= merchant.card_style || 'default' %>" onclick="openCategory('__uncategorized__')">
+                        <div class="category-banner-bg">
+                            <% const uncatImage = uncategorized.find(p => p.image); %>
+                            <% if (uncatImage && uncatImage.image) { %>
+                                <img src="<%= uncatImage.image %>" alt="" loading="lazy">
+                            <% } %>
+                            <div class="category-banner-overlay"></div>
+                        </div>
+                        <div class="category-banner-content">
+                            <div class="category-icon"><i class="fas fa-th-large"></i></div>
+                            <h3 class="category-name">أخرى</h3>
+                            <span class="category-count"><%= uncategorized.length %> منتج</span>
+                        </div>
+                        <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+                    </div>
+                    <% } %>
+                </div>
+                <% } else { %>
+                <!-- No categories - show all products directly -->
+                <div class="products-grid">
+                    <% activeProducts.forEach(product => { %>
+                    <%- include('partials/product-card', { product, merchant }) %>
+                    <% }) %>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Category Products View (hidden by default) -->
+            <div id="category-products-view" style="display:none">
+                <button class="category-back-btn" onclick="backToCategories()">
+                    <i class="fas fa-arrow-right"></i> رجوع للأقسام
+                </button>
+                <h3 class="category-title" id="category-title-text"></h3>
+                <div class="products-grid" id="category-products-grid"></div>
+            </div>
+
+            <!-- Hidden product cards for JS to clone -->
+            <div style="display:none" id="all-products-data">
+                <% activeProducts.forEach(product => { %>
+                <div class="product-template" data-category="<%= product.category || '' %>"
+                    data-title="<%= product.title %>"
+                    data-description="<%= product.description || '' %>"
+                    data-price="<%= product.price %>"
+                    data-old-price="<%= product.old_price || 0 %>"
+                    data-image="<%= product.image || '' %>"
+                    data-salla-store="<%= product.salla_store_id || '' %>"
+                    data-salla-product="<%= product.salla_product_id || '' %>"
+                    data-salla-label="<%= product.salla_label || 'اشتري الآن' %>"
+                    data-salla-url="<%= product.salla_url || '' %>"
+                    data-card-style="<%= merchant.card_style || 'default' %>">
                 </div>
                 <% }) %>
             </div>
@@ -263,16 +278,97 @@
     }
 
     // Product category filter
-    function filterProducts(category, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.product-item').forEach(item => {
-            if (category === 'all' || item.dataset.category === category) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
+    (function() {
+        // Set category names safely via JS
+        <% if (typeof productCategories !== 'undefined') { %>
+        <% productCategories.forEach((cat, idx) => { %>
+        const catEl<%= idx %> = document.querySelector('[data-cat-idx="<%= idx %>"]');
+        if (catEl<%= idx %>) catEl<%= idx %>.dataset.catName = <%= JSON.stringify(cat) %>;
+        <% }) %>
+        <% } %>
+    })();
+
+    function openCategory(catName) {
+        const categoriesView = document.getElementById('categories-view');
+        const productsView = document.getElementById('category-products-view');
+        const grid = document.getElementById('category-products-grid');
+        const titleEl = document.getElementById('category-title-text');
+
+        titleEl.textContent = catName === '__uncategorized__' ? 'أخرى' : catName;
+        grid.innerHTML = '';
+
+        // Get products for this category
+        document.querySelectorAll('#all-products-data .product-template').forEach(tpl => {
+            const pCat = tpl.dataset.category;
+            if ((catName === '__uncategorized__' && !pCat) || pCat === catName) {
+                const card = buildProductCard(tpl);
+                grid.appendChild(card);
             }
         });
+
+        categoriesView.style.display = 'none';
+        productsView.style.display = '';
+        productsView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function backToCategories() {
+        document.getElementById('category-products-view').style.display = 'none';
+        document.getElementById('categories-view').style.display = '';
+    }
+
+    function buildProductCard(tpl) {
+        const d = tpl.dataset;
+        const card = document.createElement('div');
+        card.className = 'product-item card-' + d.cardStyle;
+
+        let html = '';
+        const price = parseFloat(d.price) || 0;
+        const oldPrice = parseFloat(d.oldPrice) || 0;
+
+        if (oldPrice > 0 && oldPrice > price) {
+            html += '<span class="product-discount-badge">' + Math.round((1 - price / oldPrice) * 100) + '%-</span>';
+        }
+
+        html += '<button class="product-preview-btn" onclick="openProductPreview(this)" title="معاينة"'
+            + ' data-title="' + escHtml(d.title) + '"'
+            + ' data-description="' + escHtml(d.description) + '"'
+            + ' data-price="' + d.price + '"'
+            + ' data-old-price="' + d.oldPrice + '"'
+            + ' data-image="' + escHtml(d.image) + '">'
+            + '<i class="fas fa-eye"></i></button>';
+
+        html += '<div class="product-image">';
+        if (d.image) {
+            html += '<img src="' + escHtml(d.image) + '" alt="' + escHtml(d.title) + '" loading="lazy">';
+        } else {
+            html += '<div class="product-image-placeholder"><i class="fas fa-image"></i></div>';
+        }
+        html += '</div>';
+
+        html += '<div class="product-details">';
+        html += '<h3 class="product-title">' + escHtml(d.title) + '</h3>';
+        if (d.description) html += '<p class="product-description">' + escHtml(d.description) + '</p>';
+        html += '<div class="product-pricing"><span class="product-current-price">' + price + ' ر.س</span>';
+        if (oldPrice > 0) html += '<span class="product-was-price">' + oldPrice + ' ر.س</span>';
+        html += '</div>';
+
+        if (d.sallaStore && d.sallaProduct) {
+            html += '<div class="salla-widget-wrap"><salla-mini-checkout-widget store-id="' + escHtml(d.sallaStore)
+                + '" products="[' + escHtml(d.sallaProduct) + ']" language="ar" label="' + escHtml(d.sallaLabel)
+                + '"></salla-mini-checkout-widget></div>';
+        } else if (d.sallaUrl) {
+            html += '<a href="' + escHtml(d.sallaUrl) + '" target="_blank" rel="noopener noreferrer" class="product-buy-btn">'
+                + '<i class="fas fa-shopping-cart"></i> اشتري الآن</a>';
+        }
+        html += '</div>';
+
+        card.innerHTML = html;
+        return card;
+    }
+
+    function escHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     // Product preview modal
