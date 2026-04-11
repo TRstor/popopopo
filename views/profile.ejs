@@ -280,12 +280,11 @@
     // Product category filter
     (function() {
         // Set category names safely via JS
-        <% if (typeof productCategories !== 'undefined') { %>
-        <% productCategories.forEach((cat, idx) => { %>
-        const catEl<%= idx %> = document.querySelector('[data-cat-idx="<%= idx %>"]');
-        if (catEl<%= idx %>) catEl<%= idx %>.dataset.catName = <%= JSON.stringify(cat) %>;
-        <% }) %>
-        <% } %>
+        var _cats = <%- JSON.stringify(productCategories || []) %>;
+        _cats.forEach(function(cat, idx) {
+            var el = document.querySelector('[data-cat-idx="' + idx + '"]');
+            if (el) el.dataset.catName = cat;
+        });
     })();
 
     function openCategory(catName) {
