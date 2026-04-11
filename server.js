@@ -148,14 +148,13 @@ app.get('/:username', async (req, res) => {
             await dbModule.createPageView({ merchant_id: merchant.id, ip_address: ip, user_agent: ua });
         } catch(e) {}
 
-        const [links, sections, products, viewCount] = await Promise.all([
+        const [links, products, viewCount] = await Promise.all([
             dbModule.getLinksByMerchant(merchant.id),
-            dbModule.getSectionsByMerchant(merchant.id),
             dbModule.getActiveProductsByMerchant(merchant.id),
             dbModule.countPageViews(merchant.id)
         ]);
 
-        res.render('profile', { merchant, links, sections, products, viewCount });
+        res.render('profile', { merchant, links, products, viewCount });
     } catch (err) {
         console.error(err);
         res.status(500).render('404');

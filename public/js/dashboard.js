@@ -248,10 +248,6 @@ function openEditModal(link) {
     const countdownInput = document.getElementById('edit-countdown');
     if (countdownInput) countdownInput.value = link.countdown_date || '';
 
-    // Set section
-    const sectionSelect = document.getElementById('edit-section-id');
-    if (sectionSelect) sectionSelect.value = String(link.section_id || 0);
-
     // Highlight selected icon
     document.querySelectorAll('#edit-icon-picker .icon-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.icon === link.icon);
@@ -305,8 +301,7 @@ document.getElementById('edit-form').addEventListener('submit', async (e) => {
         border_style: document.getElementById('edit-border-style').value || 'none',
         show_icon: parseInt(document.getElementById('edit-show-icon').value),
         show_text: parseInt(document.getElementById('edit-show-text').value),
-        countdown_date: document.getElementById('edit-countdown').value || '',
-        section_id: parseInt(document.getElementById('edit-section-id').value) || 0
+        countdown_date: document.getElementById('edit-countdown').value || ''
     };
     const res = await fetch('/api/links/update/' + id, {
         method: 'POST',

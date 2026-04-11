@@ -41,7 +41,7 @@ router.post('/products/reorder', requireAuth, async (req, res) => {
 
 router.post('/links/update/:id', requireAuth, async (req, res) => {
     try {
-        const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date, section_id } = req.body;
+        const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date } = req.body;
         const userId = req.session.user.id;
         const allowedSizes = ['full','half','third'];
         const linkSize = allowedSizes.includes(size) ? size : 'full';
@@ -54,7 +54,7 @@ router.post('/links/update/:id', requireAuth, async (req, res) => {
         await db.updateLink(req.params.id, {
             title, url, icon, color, size: linkSize, description: description || '',
             badge: badge || '', show_icon: si, show_text: st, border_style: border_style || 'none',
-            gradient: gradient || '', countdown_date: countdown_date || '', section_id: parseInt(section_id) || 0
+            gradient: gradient || '', countdown_date: countdown_date || ''
         });
         res.json({ success: true });
     } catch (err) {

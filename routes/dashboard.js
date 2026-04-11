@@ -27,10 +27,9 @@ router.get('/', async (req, res) => {
         // Admin should use /admin panel, not merchant dashboard
         const merchantCheck = await db.getMerchantById(userId);
         if (merchantCheck && merchantCheck.is_admin) return res.redirect('/admin');
-        const [merchant, links, sections, viewCount, notifications, myTickets, products] = await Promise.all([
+        const [merchant, links, viewCount, notifications, myTickets, products] = await Promise.all([
             db.getMerchantById(userId),
             db.getLinksByMerchant(userId),
-            db.getSectionsByMerchant(userId),
             db.countPageViews(userId),
             db.getNotifications(5),
             db.getTicketsByMerchant(userId, 5),
@@ -38,7 +37,7 @@ router.get('/', async (req, res) => {
         ]);
         const profileUrl = `${req.protocol}://${req.get('host')}/${merchant.username}`;
         const filter = req.query.filter || 'all';
-        res.render('dashboard', { merchant, links, sections, profileUrl, viewCount, notifications, myTickets, filter, products });
+        res.render('dashboard', { merchant, links, profileUrl, viewCount, notifications, myTickets, filter, products });
     } catch (err) {
         console.error(err);
         res.redirect('/login');
@@ -156,22 +155,74 @@ router.post('/links/toggle/:id', async (req, res) => {
     res.redirect('/dashboard');
 });
 
-router.post('/sections/add', async (req, res) => {
+router.post('/categories/add', async (req, res) => {
     try {
         const { title } = req.body;
         const userId = req.session.user.id;
-        const maxOrder = await db.getMaxSectionSortOrder(userId);
-        await db.createSection({ merchant_id: userId, title, sort_order: maxOrder + 1 });
-        res.redirect('/dashboard?msg=section_added');
+        if (!title || !title.trim()) return res.redirect('/dashboard?msg=error');
+        // Find all products without category and skip - just create first product with this category as marker
+        // Actually we just need to store this as a category. We'll create a placeholder product or
+        // better: just add a dummy field. Simplest: create a hidden "category" doc or use existing products.
+        // Best approach: store categories as a field on the merchant doc
+        const merchant = await db.getMerchantById(userId);
+        const existing = merchant.product_categories ? JSON.parse(merchant.product_categories) : [];
+        if (!existing.includes(title.trim())) {
+            existing.push(title.trim());
+            await db.updateMerchant(userId, { product_categories: JSON.stringify(existing) });
+        }
+        res.redirect('/dashboard?msg=category_added');
     } catch (err) {
         console.error(err);
         res.redirect('/dashboard?msg=error');
     }
 });
 
-router.post('/sections/delete/:id', async (req, res) => {
-    await db.deleteSectionByIdAndMerchant(req.params.id, req.session.user.id);
-    res.redirect('/dashboard');
+router.post('/categories/delete', async (req, res) => {
+    try {
+        const { category_name } = req.body;
+        const userId = req.session.user.id;
+        // Remove category from all products that have it
+        const products = await db.getProductsByMerchant(userId);
+        for (const p of products) {
+            if (p.category === category_name) {
+                await db.updateProduct(p.id, { category: '' });
+            }
+        }
+        // Remove from merchant's category list
+        const merchant = await db.getMerchantById(userId);
+        const existing = merchant.product_categories ? JSON.parse(merchant.product_categories) : [];
+        const updated = existing.filter(c => c !== category_name);
+        await db.updateMerchant(userId, { product_categories: JSON.stringify(updated) });
+        res.redirect('/dashboard?msg=category_deleted');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard?msg=error');
+    }
+});
+
+router.post('/categories/rename', async (req, res) => {
+    try {
+        const { old_name, new_name } = req.body;
+        const userId = req.session.user.id;
+        if (!new_name || !new_name.trim()) return res.redirect('/dashboard?msg=error');
+        // Rename in all products
+        const products = await db.getProductsByMerchant(userId);
+        for (const p of products) {
+            if (p.category === old_name) {
+                await db.updateProduct(p.id, { category: new_name.trim() });
+            }
+        }
+        // Rename in merchant's category list
+        const merchant = await db.getMerchantById(userId);
+        const existing = merchant.product_categories ? JSON.parse(merchant.product_categories) : [];
+        const idx = existing.indexOf(old_name);
+        if (idx !== -1) existing[idx] = new_name.trim();
+        await db.updateMerchant(userId, { product_categories: JSON.stringify(existing) });
+        res.redirect('/dashboard?msg=category_renamed');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard?msg=error');
+    }
 });
 
 router.post('/tickets/submit', async (req, res) => {
@@ -279,13 +330,12 @@ router.get('/preview', async (req, res) => {
     try {
         const userId = req.session.user.id;
         const merchant = await db.getMerchantById(userId);
-        const [links, sections, products, viewCount] = await Promise.all([
+        const [links, products, viewCount] = await Promise.all([
             db.getLinksByMerchant(userId),
-            db.getSectionsByMerchant(userId),
             db.getActiveProductsByMerchant(userId),
             db.countPageViews(userId)
         ]);
-        res.render('profile', { merchant, links, sections, products, viewCount, isPreview: true });
+        res.render('profile', { merchant, links, products, viewCount, isPreview: true });
     } catch (err) {
         console.error(err);
         res.redirect('/dashboard');

@@ -89,25 +89,9 @@
 
         <div class="tab-content" id="tab-links">
         <div class="links-container">
-            <% 
-            const activeSections = sections || [];
-            const unsectionedLinks = links.filter(l => l.is_active && (!l.section_id || l.section_id === 0));
-            %>
-
-            <% if (unsectionedLinks.length > 0) { %>
-                <% unsectionedLinks.forEach(link => { %>
-                    <%- include('partials/profile-link', { link, merchant }) %>
-                <% }) %>
-            <% } %>
-
-            <% activeSections.forEach(section => { %>
-                <% const sectionLinks = links.filter(l => l.is_active && l.section_id === section.id); %>
-                <% if (sectionLinks.length > 0) { %>
-                    <div class="section-header-row"><span><%= section.title %></span></div>
-                    <% sectionLinks.forEach(link => { %>
-                        <%- include('partials/profile-link', { link, merchant }) %>
-                    <% }) %>
-                <% } %>
+            <% const activeLinks = links.filter(l => l.is_active); %>
+            <% activeLinks.forEach(link => { %>
+                <%- include('partials/profile-link', { link, merchant }) %>
             <% }) %>
         </div>
         </div><!-- end tab-links -->
