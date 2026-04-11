@@ -225,6 +225,19 @@ router.post('/categories/rename', async (req, res) => {
     }
 });
 
+router.post('/settings/toggle-moving-products', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const merchant = await db.getMerchantById(userId);
+        const current = merchant.show_moving_products !== 0 ? 1 : 0;
+        await db.updateMerchant(userId, { show_moving_products: current ? 0 : 1 });
+        res.redirect('/dashboard?msg=saved');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard?msg=error');
+    }
+});
+
 router.post('/tickets/submit', async (req, res) => {
     const { subject, message } = req.body;
     if (subject && message) {

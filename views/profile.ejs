@@ -160,6 +160,60 @@
                 <div class="products-grid" id="category-products-grid"></div>
             </div>
 
+            <!-- Moving Products (uncategorized) -->
+            <% if (merchant.show_moving_products !== 0 && uncategorized.length > 0) { %>
+            <div class="moving-products-section">
+                <h3 class="moving-products-title"><i class="fas fa-film"></i> منتجات متحركة</h3>
+                <div class="moving-products-track">
+                    <div class="moving-products-slider">
+                        <% uncategorized.forEach(product => { %>
+                        <div class="moving-product-card">
+                            <div class="moving-product-img">
+                                <% if (product.image) { %>
+                                    <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
+                                <% } else { %>
+                                    <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
+                                <% } %>
+                                <% if (product.old_price > 0 && product.old_price > product.price) { %>
+                                    <span class="product-discount-badge"><%= Math.round((1 - product.price / product.old_price) * 100) %>%-</span>
+                                <% } %>
+                            </div>
+                            <div class="moving-product-info">
+                                <span class="moving-product-name"><%= product.title %></span>
+                                <span class="moving-product-price"><%= product.price %> ر.س</span>
+                            </div>
+                            <% if (product.salla_url) { %>
+                            <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="moving-product-buy"><i class="fas fa-shopping-cart"></i></a>
+                            <% } %>
+                        </div>
+                        <% }) %>
+                        <!-- Duplicate for seamless loop -->
+                        <% uncategorized.forEach(product => { %>
+                        <div class="moving-product-card" aria-hidden="true">
+                            <div class="moving-product-img">
+                                <% if (product.image) { %>
+                                    <img src="<%= product.image %>" alt="<%= product.title %>" loading="lazy">
+                                <% } else { %>
+                                    <div class="product-image-placeholder"><i class="fas fa-image"></i></div>
+                                <% } %>
+                                <% if (product.old_price > 0 && product.old_price > product.price) { %>
+                                    <span class="product-discount-badge"><%= Math.round((1 - product.price / product.old_price) * 100) %>%-</span>
+                                <% } %>
+                            </div>
+                            <div class="moving-product-info">
+                                <span class="moving-product-name"><%= product.title %></span>
+                                <span class="moving-product-price"><%= product.price %> ر.س</span>
+                            </div>
+                            <% if (product.salla_url) { %>
+                            <a href="<%= product.salla_url %>" target="_blank" rel="noopener noreferrer" class="moving-product-buy"><i class="fas fa-shopping-cart"></i></a>
+                            <% } %>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
             <!-- Hidden product cards for JS to clone -->
             <div style="display:none" id="all-products-data">
                 <% activeProducts.forEach(product => { %>
