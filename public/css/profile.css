@@ -403,7 +403,7 @@ body {
 .category-card-img {
     position: relative;
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 3/4;
     overflow: hidden;
 }
 .category-card-img img {
@@ -815,7 +815,7 @@ body {
     font-size: 22px;
 }
 
-@media (max-width: 320px) {
+@media (max-width: 240px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
     }
