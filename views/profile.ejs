@@ -123,37 +123,37 @@
                     <% productCategories.forEach((cat, idx) => { %>
                     <% const catProducts = activeProducts.filter(p => p.category === cat); %>
                     <% const catImage = catProducts.find(p => p.image); %>
-                    <div class="category-banner card-<%= merchant.card_style || 'default' %>" onclick="openCategory(this.dataset.catName)" data-cat-idx="<%= idx %>">
-                        <div class="category-banner-bg">
+                    <div class="category-card" onclick="openCategory(this.dataset.catName)" data-cat-idx="<%= idx %>">
+                        <div class="category-card-img">
                             <% if (catImage && catImage.image) { %>
                                 <img src="<%= catImage.image %>" alt="" loading="lazy">
+                            <% } else { %>
+                                <div class="category-card-placeholder"><i class="fas fa-box-open"></i></div>
                             <% } %>
-                            <div class="category-banner-overlay"></div>
+                            <div class="category-card-overlay"></div>
                         </div>
-                        <div class="category-banner-content">
-                            <div class="category-icon"><i class="fas fa-box-open"></i></div>
+                        <div class="category-card-info">
                             <h3 class="category-name"><%= cat %></h3>
                             <span class="category-count"><%= catProducts.length %> منتج</span>
                         </div>
-                        <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                     </div>
                     <% }) %>
 
                     <% if (uncategorized.length > 0) { %>
-                    <div class="category-banner card-<%= merchant.card_style || 'default' %>" onclick="openCategory('__uncategorized__')">
-                        <div class="category-banner-bg">
+                    <div class="category-card" onclick="openCategory('__uncategorized__')">
+                        <div class="category-card-img">
                             <% const uncatImage = uncategorized.find(p => p.image); %>
                             <% if (uncatImage && uncatImage.image) { %>
                                 <img src="<%= uncatImage.image %>" alt="" loading="lazy">
+                            <% } else { %>
+                                <div class="category-card-placeholder"><i class="fas fa-th-large"></i></div>
                             <% } %>
-                            <div class="category-banner-overlay"></div>
+                            <div class="category-card-overlay"></div>
                         </div>
-                        <div class="category-banner-content">
-                            <div class="category-icon"><i class="fas fa-th-large"></i></div>
+                        <div class="category-card-info">
                             <h3 class="category-name">أخرى</h3>
                             <span class="category-count"><%= uncategorized.length %> منتج</span>
                         </div>
-                        <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                     </div>
                     <% } %>
                 </div>
