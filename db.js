@@ -613,6 +613,23 @@ async function saveFile(buffer, originalName, folder) {
     return `/uploads/${fileId}`;
 }
 
+// Save a raw file (video/image) without compression. Keeps content-type as-is.
+// Caller must ensure file size is within Firestore document limits (~900KB safe).
+async function saveRawFile(buffer, originalName, folder, contentType) {
+    const { v4: uuidv4 } = require('uuid');
+    const fileId = uuidv4();
+    const base64 = buffer.toString('base64');
+    await db.collection('files').doc(fileId).set({
+        data: base64,
+        contentType: contentType || 'application/octet-stream',
+        folder,
+        originalName,
+        size: buffer.length,
+        createdAt: new Date().toISOString()
+    });
+    return `/uploads/${fileId}`;
+}
+
 async function getFile(fileId) {
     const doc = await db.collection('files').doc(fileId).get();
     return doc.exists ? doc.data() : null;
@@ -707,6 +724,6 @@ module.exports = {
     createProduct, getProductsByMerchant, getActiveProductsByMerchant,
     updateProduct, deleteProductByIdAndMerchant, toggleProductActive,
     getMaxProductSortOrder, deleteProductsByMerchant, getProductByIdAndMerchant,
-    saveFile, getFile, deleteFile,
+    saveFile, saveRawFile, getFile, deleteFile,
     checkLoginBan, recordFailedLogin, clearLoginAttempts,
 };

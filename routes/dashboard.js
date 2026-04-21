@@ -11,12 +11,26 @@ function requireAuth(req, res, next) {
 router.use(requireAuth);
 
 const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+const allowedVideoExts = ['.mp4', '.webm', '.mov'];
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
         if (!allowedExts.includes(ext)) return cb(new Error('نوع الملف غير مدعوم'));
+        cb(null, true);
+    }
+});
+
+// Separate uploader for animated background (accepts video + image, larger size)
+const animBgUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 900 * 1024 }, // 900KB (Firestore doc limit is ~1MB; base64 adds ~33%)
+    fileFilter: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (!allowedExts.includes(ext) && !allowedVideoExts.includes(ext)) {
+            return cb(new Error('نوع الملف غير مدعوم'));
+        }
         cb(null, true);
     }
 });
@@ -113,7 +127,7 @@ router.post('/settings', upload.fields([
 
 // ===== Animated background =====
 // ===== Animated background =====
-router.post('/animated-bg', async (req, res) => {
+router.post('/animated-bg', animBgUpload.fields([{ name: 'animated_bg_file', maxCount: 1 }]), async (req, res) => {
     try {
         const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
         if (!csrfToken || csrfToken !== req.session.csrfToken) {
@@ -125,20 +139,28 @@ router.post('/animated-bg', async (req, res) => {
         const allowedOpacity = ['30','60','100'];
         const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
 
-        // Validate URL (only safe schemes). Accept any https URL; lets CDNs without file extensions work.
+        // If a file was uploaded, save it and use its URL; else accept URL input.
         let url = '';
-        if (animated_bg_url && typeof animated_bg_url === 'string') {
+        if (req.files && req.files.animated_bg_file && req.files.animated_bg_file[0]) {
+            const f = req.files.animated_bg_file[0];
+            const ext = path.extname(f.originalname).toLowerCase();
+            const isVideo = allowedVideoExts.includes(ext);
+            url = await db.saveRawFile(f.buffer, f.originalname, 'animbg',
+                isVideo ? (ext === '.webm' ? 'video/webm' : ext === '.mov' ? 'video/quicktime' : 'video/mp4')
+                        : (ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : 'image/jpeg'));
+        } else if (animated_bg_url && typeof animated_bg_url === 'string') {
             const trimmed = animated_bg_url.trim();
             if (/^https?:\/\//i.test(trimmed) && trimmed.length < 500 && !/[<>"']/g.test(trimmed)) {
                 url = trimmed;
             }
         }
 
-        await db.updateMerchant(req.session.user.id, {
-            animated_bg: anim,
-            animated_bg_url: url,
-            animated_bg_opacity: opacity
-        });
+        const updateData = { animated_bg: anim, animated_bg_opacity: opacity };
+        // Only overwrite URL if we have a new value OR switching away from custom
+        if (url) updateData.animated_bg_url = url;
+        else if (anim !== 'custom') updateData.animated_bg_url = '';
+
+        await db.updateMerchant(req.session.user.id, updateData);
         res.redirect('/dashboard?msg=saved#animbg-section');
     } catch (err) {
         console.error(err);

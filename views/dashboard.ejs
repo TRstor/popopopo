@@ -306,12 +306,9 @@
                                 <input type="file" name="cover_image" accept="image/*">
                             </div>
                             <% if (merchant.cover_image) { %>
-                            <form method="POST" action="/dashboard/cover/delete" style="margin-top:8px" onsubmit="return confirm('حذف صورة الغلاف؟')">
-                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:inherit;font-weight:700;cursor:pointer;font-size:12px">
-                                    <i class="fas fa-trash"></i> حذف الغلاف
-                                </button>
-                            </form>
+                            <button type="button" onclick="deleteCover()" class="btn btn-sm" style="margin-top:8px;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:inherit;font-weight:700;cursor:pointer;font-size:12px">
+                                <i class="fas fa-trash"></i> حذف الغلاف
+                            </button>
                             <% } %>
                         </div>
                     </div>
@@ -517,7 +514,7 @@
                 <p style="color:var(--text-muted,#777);font-size:13px;margin-bottom:16px">
                     اختر خلفية متحركة لصفحتك. تعمل فوق الغلاف أو اللون الأساسي وتُضفي حيوية على المتجر.
                 </p>
-                <form method="POST" action="/dashboard/animated-bg" class="animbg-form">
+                <form method="POST" action="/dashboard/animated-bg" class="animbg-form" enctype="multipart/form-data">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
                     <label style="display:block;font-weight:700;margin-bottom:10px">نوع الخلفية</label>
@@ -545,12 +542,25 @@
                     </div>
 
                     <div class="form-group" style="margin-top:20px">
-                        <label><i class="fas fa-link"></i> رابط فيديو MP4 أو GIF (لخيار مخصّص)</label>
-                        <input type="url" name="animated_bg_url" placeholder="https://example.com/bg.mp4"
-                            value="<%= merchant.animated_bg_url || '' %>">
+                        <label><i class="fas fa-upload"></i> أو ارفع فيديو/صورة من جهازك</label>
+                        <input type="file" name="animated_bg_file" accept="video/mp4,video/webm,video/quicktime,image/gif,image/webp,image/jpeg,image/png">
                         <small style="color:var(--text-muted,#777);display:block;margin-top:6px;font-size:12px">
-                            يجب أن يكون رابطاً مباشراً (ينتهي بـ .mp4 / .webm / .gif). جرّب <a href="https://giphy.com" target="_blank" style="color:var(--primary,#8B5CF6)">Giphy</a> أو استضِف ملفك على CDN.
+                            الحد الأقصى ~900 كيلوبايت. للفيديوهات الأكبر استخدم رابط خارجي بالأسفل.
                         </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-link"></i> أو رابط فيديو MP4 أو GIF</label>
+                        <input type="url" name="animated_bg_url" placeholder="https://example.com/bg.mp4"
+                            value="<%= merchant.animated_bg_url && !merchant.animated_bg_url.startsWith('/uploads/') ? merchant.animated_bg_url : '' %>">
+                        <small style="color:var(--text-muted,#777);display:block;margin-top:6px;font-size:12px">
+                            رابط مباشر (.mp4 / .webm / .gif). جرّب <a href="https://giphy.com" target="_blank" style="color:var(--primary,#8B5CF6)">Giphy</a>.
+                        </small>
+                        <% if (merchant.animated_bg_url && merchant.animated_bg_url.startsWith('/uploads/')) { %>
+                        <div style="margin-top:8px;padding:8px 12px;background:rgba(139,92,246,0.1);border-radius:8px;font-size:12px">
+                            <i class="fas fa-check-circle" style="color:#22c55e"></i> يوجد ملف مرفوع حالياً
+                        </div>
+                        <% } %>
                     </div>
 
                     <div class="form-group">
@@ -1100,6 +1110,16 @@
         // Store token globally for fetch calls
         window.csrfToken = token;
     })();
+
+    // Delete cover image (kept outside settings form because nested forms are invalid)
+    function deleteCover() {
+        if (!confirm('حذف صورة الغلاف؟')) return;
+        const fd = new FormData();
+        fd.append('_csrf', window.csrfToken || '');
+        fetch('/dashboard/cover/delete', { method: 'POST', body: fd, credentials: 'same-origin' })
+            .then(r => { if (r.ok || r.redirected) location.reload(); else alert('فشل الحذف'); })
+            .catch(() => alert('فشل الحذف'));
+    }
 
     // Rename category
     var _renameCatForm = null;
