@@ -543,7 +543,7 @@ body {
 }
 .moving-product-card {
     flex-shrink: 0;
-    width: 110px;
+    width: 140px;
     background: var(--card-bg);
     border-radius: 12px;
     overflow: hidden;
@@ -573,21 +573,24 @@ body {
     padding: 2px 5px;
 }
 .moving-product-info {
-    padding: 6px 8px;
+    padding: 8px 10px;
     text-align: center;
 }
 .moving-product-name {
-    display: block;
-    font-size: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-bottom: 2px;
+    line-height: 1.35;
+    margin-bottom: 4px;
+    min-height: 2.7em;
+    word-break: break-word;
 }
 .moving-product-price {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     color: var(--accent);
 }

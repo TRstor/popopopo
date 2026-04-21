@@ -122,24 +122,6 @@
                         </div>
                     </div>
                     <% }) %>
-
-                    <% if (uncategorized.length > 0) { %>
-                    <div class="category-card" onclick="openCategory('__uncategorized__')">
-                        <div class="category-card-img">
-                            <% const uncatImage = uncategorized.find(p => p.image); %>
-                            <% if (uncatImage && uncatImage.image) { %>
-                                <img src="<%= uncatImage.image %>" alt="" loading="lazy">
-                            <% } else { %>
-                                <div class="category-card-placeholder"><i class="fas fa-th-large"></i></div>
-                            <% } %>
-                            <div class="category-card-overlay"></div>
-                        </div>
-                        <div class="category-card-info">
-                            <h3 class="category-name">أخرى</h3>
-                            <span class="category-count"><%= uncategorized.length %> منتج</span>
-                        </div>
-                    </div>
-                    <% } %>
                 </div>
                 <% } else { %>
                 <!-- No categories - show all products directly -->
