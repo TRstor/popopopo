@@ -70,7 +70,7 @@ router.post('/settings', upload.fields([
         const size = allowedSizes.includes(font_size) ? font_size : 'medium';
         const card = allowedCards.includes(card_style) ? card_style : 'default';
         const linkStyle = allowedLinkStyles.includes(link_style) ? link_style : 'default';
-        const coverStyle = allowedCoverStyles.includes(cover_style) ? cover_style : 'banner';
+        const coverStyle = allowedCoverStyles.includes(cover_style) ? cover_style : 'fullscreen';
 
         const updateData = {
             store_name, store_desc: store_desc || '',

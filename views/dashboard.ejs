@@ -486,8 +486,8 @@
                         <div class="form-group">
                             <label><i class="fas fa-image"></i> نمط الغلاف</label>
                             <select name="cover_style">
-                                <option value="banner" <%= (merchant.cover_style||'banner')==='banner'?'selected':'' %>>شريط علوي</option>
-                                <option value="fullscreen" <%= merchant.cover_style==='fullscreen'?'selected':'' %>>خلفية كاملة</option>
+                                <option value="fullscreen" <%= (merchant.cover_style||'fullscreen')==='fullscreen'?'selected':'' %>>خلفية كاملة (افتراضي)</option>
+                                <option value="banner" <%= merchant.cover_style==='banner'?'selected':'' %>>شريط علوي</option>
                             </select>
                         </div>
                     </div>

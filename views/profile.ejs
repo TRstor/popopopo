@@ -31,7 +31,8 @@
         body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 0; }
         .profile-page { position: relative; z-index: 1; }
         <% } %>
-        <% if (merchant.cover_style === 'fullscreen' && merchant.cover_image) { %>
+        <% const useFullCover = merchant.cover_image && merchant.cover_style !== 'banner'; %>
+        <% if (useFullCover) { %>
         body.has-fullscreen-cover { background-image: url('<%= merchant.cover_image %>'); background-size: cover; background-position: center top; background-attachment: fixed; background-color: #000; }
         body.has-fullscreen-cover::before { content: ''; position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.92) 100%); z-index: 0; pointer-events: none; }
         body.has-fullscreen-cover .profile-page { position: relative; z-index: 1; padding-top: 180px; }
@@ -39,7 +40,7 @@
         <% } %>
     </style>
 </head>
-<body class="<%= (merchant.cover_style === 'fullscreen' && merchant.cover_image) ? 'has-fullscreen-cover' : '' %> link-style-<%= merchant.link_style || 'default' %>">
+<body class="<%= useFullCover ? 'has-fullscreen-cover' : '' %> link-style-icon-card">
     <% if (typeof isPreview !== 'undefined' && isPreview) { %>
     <div class="preview-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#8B5CF6;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-family:Tajawal,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
         <span><i class="fas fa-eye" style="margin-left:6px"></i> وضع المعاينة — هذا ما يراه الزوار</span>
@@ -52,7 +53,7 @@
             <span>Link<span class="brand-highlight">TR</span></span>
         </div>
 
-        <% if (merchant.cover_image && merchant.cover_style !== 'fullscreen') { %>
+        <% if (merchant.cover_image && !useFullCover) { %>
         <div class="cover-image">
             <img src="<%= merchant.cover_image %>" alt="غلاف">
         </div>

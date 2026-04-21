@@ -15,7 +15,7 @@
     </span>
     <% if (link.countdown_date) { %><span class="countdown" data-countdown="<%= link.countdown_date %>"></span><% } %>
 </a>
-<% if ((merchant.link_style === 'icon-card') && (link.size || 'full') === 'full') { %>
+<% if ((link.size || 'full') === 'full') { %>
 <button type="button" class="link-menu-btn" aria-label="خيارات"
     onclick="openLinkMenu(event, this)"
     data-link-url="<%= link.url %>"
