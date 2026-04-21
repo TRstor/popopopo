@@ -31,12 +31,17 @@
         body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 0; }
         .profile-page { position: relative; z-index: 1; }
         <% } %>
-        <% const useFullCover = merchant.cover_image && merchant.cover_style !== 'banner'; %>
-        <% if (useFullCover) { %>
+        <% const hasAnimBg = merchant.animated_bg && merchant.animated_bg !== 'none'; %>
+        <% const hasCoverFull = merchant.cover_image && merchant.cover_style !== 'banner'; %>
+        <% const useFullCover = hasCoverFull || hasAnimBg; %>
+        <% if (hasCoverFull) { %>
         body.has-fullscreen-cover { background-image: url('<%= merchant.cover_image %>'); background-size: cover; background-position: center top; background-attachment: fixed; background-color: #000; }
-        body.has-fullscreen-cover::before { content: ''; position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.92) 100%); z-index: 0; pointer-events: none; }
-        body.has-fullscreen-cover .profile-page { position: relative; z-index: 1; padding-top: 180px; }
-        body.has-fullscreen-cover .profile-card { background: rgba(18,18,22,0.55); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.12); }
+        <% } else if (hasAnimBg) { %>
+        body.has-fullscreen-cover { background-color: #0a0a10; }
+        <% } %>
+        <% if (useFullCover) { %>
+        body.has-fullscreen-cover::before { content: ''; position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.85) 100%); z-index: 1; pointer-events: none; }
+        body.has-fullscreen-cover .profile-page { position: relative; z-index: 3; }
         <% } %>
     </style>
 </head>
