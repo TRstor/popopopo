@@ -145,12 +145,13 @@ router.post('/animated-bg', (req, res, next) => {
         }
         const { animated_bg, animated_bg_url, animated_bg_opacity } = req.body;
         const allowed = ['none','stars','particles','waves','aurora','bubbles','snow','gradient','custom'];
-        const anim = allowed.includes(animated_bg) ? animated_bg : 'none';
+        let anim = allowed.includes(animated_bg) ? animated_bg : 'none';
         const allowedOpacity = ['30','60','100'];
         const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
 
         let url = '';
         let mediaType = ''; // 'video' | 'image'
+        let hasNewMedia = false;
         if (req.files && req.files.animated_bg_file && req.files.animated_bg_file[0]) {
             const f = req.files.animated_bg_file[0];
             const ext = path.extname(f.originalname).toLowerCase();
@@ -161,23 +162,43 @@ router.post('/animated-bg', (req, res, next) => {
                 : (ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg');
             try {
                 url = await db.saveRawFile(f.buffer, f.originalname, 'animbg', contentType);
+                hasNewMedia = true;
             } catch (saveErr) {
                 console.error('animBg saveRawFile failed:', saveErr);
                 return res.redirect('/dashboard?msg=file_too_large#animbg-section');
             }
-        } else if (animated_bg_url && typeof animated_bg_url === 'string') {
+        } else if (animated_bg_url && typeof animated_bg_url === 'string' && animated_bg_url.trim()) {
             const trimmed = animated_bg_url.trim();
             if (/^https?:\/\//i.test(trimmed) && trimmed.length < 500 && !/[<>"']/g.test(trimmed)) {
                 url = trimmed;
+                hasNewMedia = true;
                 if (/\.(mp4|webm|mov)(\?|#|$)/i.test(trimmed)) mediaType = 'video';
                 else if (/\.(gif|webp|jpg|jpeg|png)(\?|#|$)/i.test(trimmed)) mediaType = 'image';
                 else mediaType = 'video'; // default assumption
             }
         }
 
+        // If user provided media, force anim to 'custom' (safety net in case radio wasn't switched)
+        if (hasNewMedia) anim = 'custom';
+
+        // Determine whether the user intends to clear the URL:
+        // anim === 'custom' with no file and empty url field => they're clearing
+        const urlFieldEmpty = !animated_bg_url || !String(animated_bg_url).trim();
+        const noFile = !(req.files && req.files.animated_bg_file && req.files.animated_bg_file[0]);
+
         const updateData = { animated_bg: anim, animated_bg_opacity: opacity };
-        if (url) { updateData.animated_bg_url = url; updateData.animated_bg_type = mediaType; }
-        else if (anim !== 'custom') { updateData.animated_bg_url = ''; updateData.animated_bg_type = ''; }
+        if (hasNewMedia) {
+            updateData.animated_bg_url = url;
+            updateData.animated_bg_type = mediaType;
+        } else if (anim === 'custom' && urlFieldEmpty && noFile) {
+            // User selected custom but cleared everything -> clear saved media and fall back to none
+            updateData.animated_bg_url = '';
+            updateData.animated_bg_type = '';
+            updateData.animated_bg = 'none';
+        } else if (anim !== 'custom') {
+            updateData.animated_bg_url = '';
+            updateData.animated_bg_type = '';
+        }
 
         await db.updateMerchant(req.session.user.id, updateData);
         res.redirect('/dashboard?msg=saved#animbg-section');

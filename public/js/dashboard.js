@@ -201,7 +201,11 @@ function showToast(msg) {
         product_added: 'تم إضافة المنتج',
         product_saved: 'تم حفظ المنتج',
         product_deleted: 'تم حذف المنتج',
-        product_toggled: 'تم تحديث حالة المنتج'
+        product_toggled: 'تم تحديث حالة المنتج',
+        file_too_large: 'حجم الملف كبير جداً — الحد الأقصى 700 كيلوبايت',
+        unsupported_type: 'نوع الملف غير مدعوم',
+        upload_error: 'فشل رفع الملف — حاول مرة أخرى',
+        error: 'حدث خطأ — حاول مرة أخرى'
     };
     if (msg && msgs[msg]) {
         setTimeout(() => showToast(msgs[msg]), 300);

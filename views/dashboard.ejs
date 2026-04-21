@@ -597,6 +597,19 @@
                         if (fileInput) fileInput.addEventListener('change', function(){ if (fileInput.files && fileInput.files[0]) selectCustom(); });
                         var urlInput = document.querySelector('input[name="animated_bg_url"]');
                         if (urlInput) urlInput.addEventListener('input', function(){ if (urlInput.value.trim()) selectCustom(); });
+
+                        // Client-side size check to avoid failed uploads
+                        var animForm = document.querySelector('.animbg-form');
+                        if (animForm) animForm.addEventListener('submit', function(e){
+                            if (fileInput && fileInput.files && fileInput.files[0]) {
+                                var size = fileInput.files[0].size;
+                                if (size > 700 * 1024) {
+                                    e.preventDefault();
+                                    alert('حجم الملف ' + Math.round(size/1024) + ' كيلوبايت — الحد الأقصى 700 كيلوبايت. استخدم رابط خارجي للملفات الأكبر.');
+                                    return false;
+                                }
+                            }
+                        });
                     })();
                 </script>
             </section>
