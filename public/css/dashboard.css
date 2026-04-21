@@ -1457,3 +1457,68 @@ select:focus { border-color: #8B5CF6; }
         margin-top: 4px;
     }
 }
+
+/* ===== Animated BG Picker ===== */
+.animbg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.animbg-option {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px;
+    border: 2px solid var(--border, rgba(255,255,255,0.1));
+    border-radius: 14px;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: var(--card-bg, rgba(255,255,255,0.02));
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+.animbg-option input[type="radio"] { display: none !important; position: absolute; opacity: 0; pointer-events: none; }
+.animbg-option:hover { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.4); }
+.animbg-option.selected { border-color: #8B5CF6; background: rgba(139,92,246,0.12); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+.animbg-option .animbg-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: #1a1a22;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.85); font-size: 22px;
+    overflow: hidden;
+    position: relative;
+}
+.animbg-option > span { font-size: 12px; font-weight: 700; color: var(--text, #e5e7eb); }
+
+.animbg-none      { background: repeating-linear-gradient(45deg,#1a1a22,#1a1a22 6px,#22222c 6px,#22222c 12px) !important; color:#555 !important; }
+.animbg-stars     { background: #0a0a15 !important; }
+.animbg-stars::after{ content:''; position:absolute; inset:0; background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent), radial-gradient(2px 2px at 50% 80%, #fff, transparent), radial-gradient(1px 1px at 80% 20%, #fff, transparent), radial-gradient(1px 1px at 30% 70%, #fff, transparent); }
+.animbg-particles { background: linear-gradient(180deg,#1a0b2e,#2a1854) !important; }
+.animbg-particles::after{ content:''; position:absolute; left:50%; bottom:10%; width:4px; height:4px; border-radius:50%; background:#fff; box-shadow: -14px -6px 0 #fff, 14px -10px 0 #fff, -6px -14px 0 rgba(255,255,255,0.7), 10px -16px 0 rgba(255,255,255,0.7); }
+.animbg-waves     { background: linear-gradient(180deg,#0a0a15 45%,#8B5CF6) !important; }
+.animbg-aurora    { background: linear-gradient(135deg,#8B5CF6,#EC4899,#22D3EE) !important; }
+.animbg-bubbles   { background: linear-gradient(180deg,#1a0b2e,#0f4c75) !important; }
+.animbg-snow      { background: linear-gradient(180deg,#1e3a5f,#0a0a15) !important; color:#fff !important; }
+.animbg-gradient  { background: linear-gradient(135deg,#8B5CF6,#EC4899,#3B82F6,#22D3EE) !important; background-size:300% 300% !important; animation: animbgGrad 6s ease infinite; }
+.animbg-custom    { background: linear-gradient(135deg,#374151,#1f2937) !important; }
+@keyframes animbgGrad {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animbg-form .form-group { margin-top: 14px; }
+.animbg-form input[type="url"] {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    background: var(--card-bg, rgba(255,255,255,0.03));
+    color: var(--text, #e5e7eb);
+    font-family: inherit;
+}
