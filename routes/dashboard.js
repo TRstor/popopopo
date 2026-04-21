@@ -150,10 +150,12 @@ router.post('/animated-bg', (req, res, next) => {
         const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
 
         let url = '';
+        let mediaType = ''; // 'video' | 'image'
         if (req.files && req.files.animated_bg_file && req.files.animated_bg_file[0]) {
             const f = req.files.animated_bg_file[0];
             const ext = path.extname(f.originalname).toLowerCase();
             const isVideo = allowedVideoExts.includes(ext);
+            mediaType = isVideo ? 'video' : 'image';
             const contentType = isVideo
                 ? (ext === '.webm' ? 'video/webm' : ext === '.mov' ? 'video/quicktime' : 'video/mp4')
                 : (ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg');
@@ -167,12 +169,15 @@ router.post('/animated-bg', (req, res, next) => {
             const trimmed = animated_bg_url.trim();
             if (/^https?:\/\//i.test(trimmed) && trimmed.length < 500 && !/[<>"']/g.test(trimmed)) {
                 url = trimmed;
+                if (/\.(mp4|webm|mov)(\?|#|$)/i.test(trimmed)) mediaType = 'video';
+                else if (/\.(gif|webp|jpg|jpeg|png)(\?|#|$)/i.test(trimmed)) mediaType = 'image';
+                else mediaType = 'video'; // default assumption
             }
         }
 
         const updateData = { animated_bg: anim, animated_bg_opacity: opacity };
-        if (url) updateData.animated_bg_url = url;
-        else if (anim !== 'custom') updateData.animated_bg_url = '';
+        if (url) { updateData.animated_bg_url = url; updateData.animated_bg_type = mediaType; }
+        else if (anim !== 'custom') { updateData.animated_bg_url = ''; updateData.animated_bg_type = ''; }
 
         await db.updateMerchant(req.session.user.id, updateData);
         res.redirect('/dashboard?msg=saved#animbg-section');

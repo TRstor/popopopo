@@ -1123,14 +1123,14 @@ body {
 .anim-bg-layer {
     position: fixed;
     inset: 0;
-    z-index: 1;
+    z-index: 2;
     pointer-events: none;
     overflow: hidden;
 }
-body.has-fullscreen-cover .anim-bg-layer { z-index: 1; }
-body.has-fullscreen-cover::before { z-index: 2 !important; }
+body.has-fullscreen-cover::before { z-index: 1 !important; }
+body.has-fullscreen-cover .anim-bg-layer { z-index: 2; }
 body.has-fullscreen-cover .profile-page { z-index: 3 !important; }
-.profile-page { position: relative; z-index: 2; }
+.profile-page { position: relative; z-index: 3; }
 
 .anim-bg-video {
     position: absolute;

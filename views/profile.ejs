@@ -46,15 +46,12 @@
         <div class="anim-bg-layer" style="opacity: <%= animOp %>">
             <% if (merchant.animated_bg === 'custom' && merchant.animated_bg_url) { %>
                 <% const bgUrl = merchant.animated_bg_url; %>
-                <% const isVideo = /\.(mp4|webm|mov)(\?|#|$)/i.test(bgUrl); %>
-                <% const isImage = /\.(gif|webp|jpg|jpeg|png)(\?|#|$)/i.test(bgUrl); %>
-                <% if (isVideo || (!isImage && !isVideo)) { %>
+                <% const storedType = merchant.animated_bg_type; %>
+                <% const isVideo = storedType === 'video' || (!storedType && /\.(mp4|webm|mov)(\?|#|$)/i.test(bgUrl)); %>
+                <% if (isVideo) { %>
                     <video autoplay muted loop playsinline preload="auto" class="anim-bg-video" onerror="this.style.display='none'">
                         <source src="<%= bgUrl %>">
                     </video>
-                    <% if (!isVideo) { %>
-                    <img src="<%= bgUrl %>" alt="" class="anim-bg-video" onerror="this.style.display='none'" style="display:none" onload="if(!document.querySelector('.anim-bg-video[src]')){this.style.display='block'}">
-                    <% } %>
                 <% } else { %>
                     <img src="<%= bgUrl %>" alt="" class="anim-bg-video" onerror="this.style.display='none'">
                 <% } %>

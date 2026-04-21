@@ -585,6 +585,18 @@
                                 r.closest('.animbg-option').classList.add('selected');
                             });
                         });
+                        // Auto-select 'custom' when user uploads a file or pastes a URL
+                        function selectCustom() {
+                            var radio = document.querySelector('.animbg-option input[value="custom"]');
+                            if (radio && !radio.checked) {
+                                radio.checked = true;
+                                radio.dispatchEvent(new Event('change'));
+                            }
+                        }
+                        var fileInput = document.querySelector('input[name="animated_bg_file"]');
+                        if (fileInput) fileInput.addEventListener('change', function(){ if (fileInput.files && fileInput.files[0]) selectCustom(); });
+                        var urlInput = document.querySelector('input[name="animated_bg_url"]');
+                        if (urlInput) urlInput.addEventListener('input', function(){ if (urlInput.value.trim()) selectCustom(); });
                     })();
                 </script>
             </section>
