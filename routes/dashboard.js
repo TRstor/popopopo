@@ -112,6 +112,7 @@ router.post('/settings', upload.fields([
 });
 
 // ===== Animated background =====
+// ===== Animated background =====
 router.post('/animated-bg', async (req, res) => {
     try {
         const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
@@ -124,11 +125,11 @@ router.post('/animated-bg', async (req, res) => {
         const allowedOpacity = ['30','60','100'];
         const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
 
-        // Validate URL (only safe schemes, safe extensions)
+        // Validate URL (only safe schemes). Accept any https URL; lets CDNs without file extensions work.
         let url = '';
         if (animated_bg_url && typeof animated_bg_url === 'string') {
             const trimmed = animated_bg_url.trim();
-            if (/^https?:\/\//i.test(trimmed) && /\.(mp4|webm|gif|webp)(\?|$)/i.test(trimmed) && trimmed.length < 500) {
+            if (/^https?:\/\//i.test(trimmed) && trimmed.length < 500 && !/[<>"']/g.test(trimmed)) {
                 url = trimmed;
             }
         }
@@ -139,6 +140,21 @@ router.post('/animated-bg', async (req, res) => {
             animated_bg_opacity: opacity
         });
         res.redirect('/dashboard?msg=saved#animbg-section');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard?msg=error');
+    }
+});
+
+// ===== Cover image delete =====
+router.post('/cover/delete', async (req, res) => {
+    try {
+        const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
+        if (!csrfToken || csrfToken !== req.session.csrfToken) {
+            return res.status(403).send('CSRF token invalid');
+        }
+        await db.updateMerchant(req.session.user.id, { cover_image: '' });
+        res.redirect('/dashboard?msg=saved#settings-section');
     } catch (err) {
         console.error(err);
         res.redirect('/dashboard?msg=error');

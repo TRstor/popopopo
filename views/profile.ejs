@@ -45,12 +45,18 @@
         <% const animOp = ((parseInt(merchant.animated_bg_opacity) || 60) / 100); %>
         <div class="anim-bg-layer" style="opacity: <%= animOp %>">
             <% if (merchant.animated_bg === 'custom' && merchant.animated_bg_url) { %>
-                <% if (/\.(mp4|webm)(\?|$)/i.test(merchant.animated_bg_url)) { %>
-                    <video autoplay muted loop playsinline preload="auto" class="anim-bg-video">
-                        <source src="<%= merchant.animated_bg_url %>">
+                <% const bgUrl = merchant.animated_bg_url; %>
+                <% const isVideo = /\.(mp4|webm|mov)(\?|#|$)/i.test(bgUrl); %>
+                <% const isImage = /\.(gif|webp|jpg|jpeg|png)(\?|#|$)/i.test(bgUrl); %>
+                <% if (isVideo || (!isImage && !isVideo)) { %>
+                    <video autoplay muted loop playsinline preload="auto" class="anim-bg-video" onerror="this.style.display='none'">
+                        <source src="<%= bgUrl %>">
                     </video>
+                    <% if (!isVideo) { %>
+                    <img src="<%= bgUrl %>" alt="" class="anim-bg-video" onerror="this.style.display='none'" style="display:none" onload="if(!document.querySelector('.anim-bg-video[src]')){this.style.display='block'}">
+                    <% } %>
                 <% } else { %>
-                    <img src="<%= merchant.animated_bg_url %>" alt="" class="anim-bg-video">
+                    <img src="<%= bgUrl %>" alt="" class="anim-bg-video" onerror="this.style.display='none'">
                 <% } %>
             <% } else if (merchant.animated_bg === 'stars') { %>
                 <div class="stars-layer"></div><div class="stars-layer stars-2"></div><div class="stars-layer stars-3"></div>

@@ -305,6 +305,14 @@
                                 <% } %>
                                 <input type="file" name="cover_image" accept="image/*">
                             </div>
+                            <% if (merchant.cover_image) { %>
+                            <form method="POST" action="/dashboard/cover/delete" style="margin-top:8px" onsubmit="return confirm('حذف صورة الغلاف؟')">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:inherit;font-weight:700;cursor:pointer;font-size:12px">
+                                    <i class="fas fa-trash"></i> حذف الغلاف
+                                </button>
+                            </form>
+                            <% } %>
                         </div>
                     </div>
 
