@@ -22,10 +22,10 @@ const upload = multer({
     }
 });
 
-// Separate uploader for animated background (accepts video + image, larger size)
+// Separate uploader for animated background (accepts video + image). Firestore doc limit is ~1MB and base64 adds ~33%, so we cap at ~700KB.
 const animBgUpload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 900 * 1024 }, // 900KB (Firestore doc limit is ~1MB; base64 adds ~33%)
+    limits: { fileSize: 700 * 1024 },
     fileFilter: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
         if (!allowedExts.includes(ext) && !allowedVideoExts.includes(ext)) {
@@ -127,7 +127,17 @@ router.post('/settings', upload.fields([
 
 // ===== Animated background =====
 // ===== Animated background =====
-router.post('/animated-bg', animBgUpload.fields([{ name: 'animated_bg_file', maxCount: 1 }]), async (req, res) => {
+router.post('/animated-bg', (req, res, next) => {
+    animBgUpload.fields([{ name: 'animated_bg_file', maxCount: 1 }])(req, res, (err) => {
+        if (err) {
+            let msg = 'upload_error';
+            if (err.code === 'LIMIT_FILE_SIZE') msg = 'file_too_large';
+            else if (err.message && err.message.includes('غير مدعوم')) msg = 'unsupported_type';
+            return res.redirect('/dashboard?msg=' + msg + '#animbg-section');
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
         if (!csrfToken || csrfToken !== req.session.csrfToken) {
@@ -139,15 +149,20 @@ router.post('/animated-bg', animBgUpload.fields([{ name: 'animated_bg_file', max
         const allowedOpacity = ['30','60','100'];
         const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
 
-        // If a file was uploaded, save it and use its URL; else accept URL input.
         let url = '';
         if (req.files && req.files.animated_bg_file && req.files.animated_bg_file[0]) {
             const f = req.files.animated_bg_file[0];
             const ext = path.extname(f.originalname).toLowerCase();
             const isVideo = allowedVideoExts.includes(ext);
-            url = await db.saveRawFile(f.buffer, f.originalname, 'animbg',
-                isVideo ? (ext === '.webm' ? 'video/webm' : ext === '.mov' ? 'video/quicktime' : 'video/mp4')
-                        : (ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : 'image/jpeg'));
+            const contentType = isVideo
+                ? (ext === '.webm' ? 'video/webm' : ext === '.mov' ? 'video/quicktime' : 'video/mp4')
+                : (ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg');
+            try {
+                url = await db.saveRawFile(f.buffer, f.originalname, 'animbg', contentType);
+            } catch (saveErr) {
+                console.error('animBg saveRawFile failed:', saveErr);
+                return res.redirect('/dashboard?msg=file_too_large#animbg-section');
+            }
         } else if (animated_bg_url && typeof animated_bg_url === 'string') {
             const trimmed = animated_bg_url.trim();
             if (/^https?:\/\//i.test(trimmed) && trimmed.length < 500 && !/[<>"']/g.test(trimmed)) {
@@ -156,15 +171,14 @@ router.post('/animated-bg', animBgUpload.fields([{ name: 'animated_bg_file', max
         }
 
         const updateData = { animated_bg: anim, animated_bg_opacity: opacity };
-        // Only overwrite URL if we have a new value OR switching away from custom
         if (url) updateData.animated_bg_url = url;
         else if (anim !== 'custom') updateData.animated_bg_url = '';
 
         await db.updateMerchant(req.session.user.id, updateData);
         res.redirect('/dashboard?msg=saved#animbg-section');
     } catch (err) {
-        console.error(err);
-        res.redirect('/dashboard?msg=error');
+        console.error('animated-bg error:', err);
+        res.redirect('/dashboard?msg=error#animbg-section');
     }
 });
 

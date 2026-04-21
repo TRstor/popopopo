@@ -545,7 +545,7 @@
                         <label><i class="fas fa-upload"></i> أو ارفع فيديو/صورة من جهازك</label>
                         <input type="file" name="animated_bg_file" accept="video/mp4,video/webm,video/quicktime,image/gif,image/webp,image/jpeg,image/png">
                         <small style="color:var(--text-muted,#777);display:block;margin-top:6px;font-size:12px">
-                            الحد الأقصى ~900 كيلوبايت. للفيديوهات الأكبر استخدم رابط خارجي بالأسفل.
+                            الحد الأقصى ~700 كيلوبايت. للفيديوهات الأكبر استخدم رابط خارجي بالأسفل.
                         </small>
                     </div>
 
@@ -1114,11 +1114,16 @@
     // Delete cover image (kept outside settings form because nested forms are invalid)
     function deleteCover() {
         if (!confirm('حذف صورة الغلاف؟')) return;
-        const fd = new FormData();
-        fd.append('_csrf', window.csrfToken || '');
-        fetch('/dashboard/cover/delete', { method: 'POST', body: fd, credentials: 'same-origin' })
-            .then(r => { if (r.ok || r.redirected) location.reload(); else alert('فشل الحذف'); })
-            .catch(() => alert('فشل الحذف'));
+        const body = '_csrf=' + encodeURIComponent(window.csrfToken || '');
+        fetch('/dashboard/cover/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': window.csrfToken || '' },
+            body: body,
+            credentials: 'same-origin'
+        }).then(r => {
+            if (r.ok || r.redirected) location.reload();
+            else r.text().then(t => alert('فشل الحذف: ' + (t || r.status)));
+        }).catch(err => alert('فشل الحذف: ' + err.message));
     }
 
     // Rename category
