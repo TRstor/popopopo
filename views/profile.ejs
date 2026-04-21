@@ -31,9 +31,15 @@
         body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 0; }
         .profile-page { position: relative; z-index: 1; }
         <% } %>
+        <% if (merchant.cover_style === 'fullscreen' && merchant.cover_image) { %>
+        body.has-fullscreen-cover { background-image: url('<%= merchant.cover_image %>'); background-size: cover; background-position: center top; background-attachment: fixed; background-color: #000; }
+        body.has-fullscreen-cover::before { content: ''; position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.92) 100%); z-index: 0; pointer-events: none; }
+        body.has-fullscreen-cover .profile-page { position: relative; z-index: 1; padding-top: 180px; }
+        body.has-fullscreen-cover .profile-card { background: rgba(18,18,22,0.55); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.12); }
+        <% } %>
     </style>
 </head>
-<body>
+<body class="<%= (merchant.cover_style === 'fullscreen' && merchant.cover_image) ? 'has-fullscreen-cover' : '' %> link-style-<%= merchant.link_style || 'default' %>">
     <% if (typeof isPreview !== 'undefined' && isPreview) { %>
     <div class="preview-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#8B5CF6;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-family:Tajawal,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
         <span><i class="fas fa-eye" style="margin-left:6px"></i> وضع المعاينة — هذا ما يراه الزوار</span>
@@ -46,7 +52,7 @@
             <span>Link<span class="brand-highlight">TR</span></span>
         </div>
 
-        <% if (merchant.cover_image) { %>
+        <% if (merchant.cover_image && merchant.cover_style !== 'fullscreen') { %>
         <div class="cover-image">
             <img src="<%= merchant.cover_image %>" alt="غلاف">
         </div>
@@ -236,6 +242,19 @@
         </div>
     </div>
 
+    <!-- Link Options Menu -->
+    <div class="link-menu-overlay" id="link-menu-overlay" onclick="if(event.target===this)closeLinkMenu()">
+        <div class="link-menu-sheet" role="dialog" aria-modal="true">
+            <div class="link-menu-handle"></div>
+            <div class="link-menu-title" id="link-menu-title"></div>
+            <button class="link-menu-item" onclick="linkMenuAction('open')"><i class="fas fa-external-link-alt"></i> فتح الرابط</button>
+            <button class="link-menu-item" onclick="linkMenuAction('copy')"><i class="fas fa-copy"></i> نسخ الرابط</button>
+            <button class="link-menu-item" onclick="linkMenuAction('share')"><i class="fas fa-share-alt"></i> مشاركة</button>
+            <button class="link-menu-item" onclick="linkMenuAction('whatsapp')"><i class="fab fa-whatsapp"></i> مشاركة عبر واتساب</button>
+            <button class="link-menu-item link-menu-cancel" onclick="closeLinkMenu()">إلغاء</button>
+        </div>
+    </div>
+
     <script>
     // Apply button backgrounds
     document.querySelectorAll('[data-bg]').forEach(el => {
@@ -266,8 +285,7 @@
     });
 
     // Share
-    function shareProfile() {
-        const url = window.location.href;
+    function shareProfile() {        const url = window.location.href;
         const title = document.title;
         if (navigator.share) {
             navigator.share({ title, url });
@@ -287,6 +305,51 @@
             if (id) fetch('/api/links/click/' + id, { method: 'POST' }).catch(() => {});
         });
     });
+
+    // Link options menu
+    let _currentLinkData = null;
+    function openLinkMenu(ev, btn) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        _currentLinkData = {
+            url: btn.dataset.linkUrl || '',
+            title: btn.dataset.linkTitle || ''
+        };
+        document.getElementById('link-menu-title').textContent = _currentLinkData.title;
+        document.getElementById('link-menu-overlay').classList.add('active');
+    }
+    function closeLinkMenu() {
+        document.getElementById('link-menu-overlay').classList.remove('active');
+        _currentLinkData = null;
+    }
+    function linkMenuAction(action) {
+        if (!_currentLinkData) return;
+        const { url, title } = _currentLinkData;
+        if (action === 'open') {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else if (action === 'copy') {
+            navigator.clipboard.writeText(url).then(() => showToast && showToast('تم نسخ الرابط'));
+        } else if (action === 'share') {
+            if (navigator.share) navigator.share({ title, url }).catch(() => {});
+            else navigator.clipboard.writeText(url).then(() => showToast && showToast('تم نسخ الرابط'));
+        } else if (action === 'whatsapp') {
+            const msg = encodeURIComponent((title ? title + '\n' : '') + url);
+            window.open('https://wa.me/?text=' + msg, '_blank', 'noopener,noreferrer');
+        }
+        closeLinkMenu();
+    }
+    function showToast(msg) {
+        let t = document.getElementById('_ltr_toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = '_ltr_toast';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:99999;opacity:0;transition:opacity 0.2s';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.opacity = '1';
+        setTimeout(() => t.style.opacity = '0', 1800);
+    }
 
     // Tab switching
     function switchTab(tab, btn) {

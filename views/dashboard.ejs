@@ -475,6 +475,23 @@
                         </select>
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-link"></i> نمط الروابط</label>
+                            <select name="link_style">
+                                <option value="default" <%= (merchant.link_style||'default')==='default'?'selected':'' %>>افتراضي</option>
+                                <option value="icon-card" <%= merchant.link_style==='icon-card'?'selected':'' %>>بطاقة بأيقونة (عصري)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-image"></i> نمط الغلاف</label>
+                            <select name="cover_style">
+                                <option value="banner" <%= (merchant.cover_style||'banner')==='banner'?'selected':'' %>>شريط علوي</option>
+                                <option value="fullscreen" <%= merchant.cover_style==='fullscreen'?'selected':'' %>>خلفية كاملة</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> حفظ التغييرات
                     </button>

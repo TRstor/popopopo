@@ -55,23 +55,28 @@ router.post('/settings', upload.fields([
         if (!csrfToken || csrfToken !== req.session.csrfToken) {
             return res.status(403).send('CSRF token invalid - طلب غير مصرح');
         }
-        const { store_name, store_desc, theme_color, theme_style, button_shape, font_family, font_size, card_style } = req.body;
+        const { store_name, store_desc, theme_color, theme_style, button_shape, font_family, font_size, card_style, link_style, cover_style } = req.body;
         const userId = req.session.user.id;
         const allowedThemes = ['dark','light','blue','pink','emerald','sunset','ocean','rose','midnight','coffee','forest','lavender','cherry','arctic'];
         const allowedShapes = ['rounded','square','pill','circle'];
         const allowedFonts = ['Tajawal','Cairo','Almarai','Changa','Readex Pro','Noto Kufi Arabic'];
         const allowedSizes = ['small','medium','large'];
         const allowedCards = ['default','glass','flat','bordered','shadow'];
+        const allowedLinkStyles = ['default','icon-card'];
+        const allowedCoverStyles = ['banner','fullscreen'];
         const style = allowedThemes.includes(theme_style) ? theme_style : 'dark';
         const shape = allowedShapes.includes(button_shape) ? button_shape : 'rounded';
         const font = allowedFonts.includes(font_family) ? font_family : 'Tajawal';
         const size = allowedSizes.includes(font_size) ? font_size : 'medium';
         const card = allowedCards.includes(card_style) ? card_style : 'default';
+        const linkStyle = allowedLinkStyles.includes(link_style) ? link_style : 'default';
+        const coverStyle = allowedCoverStyles.includes(cover_style) ? cover_style : 'banner';
 
         const updateData = {
             store_name, store_desc: store_desc || '',
             theme_color: theme_color || '#8B5CF6',
-            theme_style: style, button_shape: shape, font_family: font, font_size: size, card_style: card
+            theme_style: style, button_shape: shape, font_family: font, font_size: size, card_style: card,
+            link_style: linkStyle, cover_style: coverStyle
         };
 
         if (req.files) {
@@ -97,6 +102,8 @@ router.post('/settings', upload.fields([
         req.session.user.font_family = font;
         req.session.user.font_size = size;
         req.session.user.card_style = card;
+        req.session.user.link_style = linkStyle;
+        req.session.user.cover_style = coverStyle;
         res.redirect('/dashboard?msg=saved');
     } catch (err) {
         console.error(err);

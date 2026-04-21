@@ -177,6 +177,80 @@ body {
     gap: 10px;
 }
 
+/* Wrapper for link + menu button */
+.profile-link-wrap {
+    position: relative;
+}
+.profile-link-wrap.size-full { grid-column: span 6; }
+.profile-link-wrap.size-half { grid-column: span 3; }
+.profile-link-wrap.size-third { grid-column: span 2; }
+.profile-link-wrap.size-icon { grid-column: span 1; }
+.profile-link-wrap > .profile-link { grid-column: auto !important; width: 100%; }
+
+/* Three-dot menu button (visible only with icon-card link style) */
+.link-menu-btn {
+    display: none;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: currentColor;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 2;
+}
+html[dir="rtl"] .link-menu-btn { right: auto; left: 8px; }
+.link-menu-btn:hover { background: rgba(255,255,255,0.18); opacity: 1; transform: translateY(-50%) scale(1.1); }
+.link-menu-btn:active { transform: translateY(-50%) scale(0.92); }
+body.link-style-icon-card .link-menu-btn { display: inline-flex; }
+
+/* ===== Link style: icon-card ===== */
+body.link-style-icon-card .profile-link.size-full {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 52px 10px 14px;
+    text-align: right;
+    min-height: 60px;
+}
+html[dir="rtl"] body.link-style-icon-card .profile-link.size-full {
+    padding: 10px 14px 10px 52px;
+    text-align: right;
+}
+body.link-style-icon-card .profile-link.size-full .link-icon-wrap {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+body.link-style-icon-card .profile-link.size-full .link-icon-wrap i {
+    font-size: 18px;
+}
+body.link-style-icon-card .profile-link.size-full .link-content {
+    flex: 1;
+    align-items: center;
+    text-align: center;
+    padding-left: 20px;
+}
+body.link-style-icon-card .profile-link.size-full .link-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
 .profile-link {
     display: flex;
     flex-direction: column;
@@ -960,3 +1034,91 @@ body {
     text-align: left;
     direction: ltr;
 }
+
+/* ===== Link Options Menu (Bottom Sheet) ===== */
+.link-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9998;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+.link-menu-overlay.active { display: flex; }
+.link-menu-sheet {
+    width: 100%;
+    max-width: 440px;
+    background: #1a1a20;
+    color: #fff;
+    border-radius: 22px 22px 0 0;
+    padding: 10px 14px 24px;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    animation: slideUpSheet 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.link-menu-handle {
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+    margin: 0 auto 12px;
+}
+.link-menu-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    padding: 4px 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.link-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: right;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.link-menu-item:hover,
+.link-menu-item:active {
+    background: rgba(255,255,255,0.06);
+}
+.link-menu-item i {
+    width: 22px;
+    text-align: center;
+    font-size: 16px;
+    color: #8B5CF6;
+}
+.link-menu-cancel {
+    margin-top: 6px;
+    justify-content: center;
+    color: #ef4444;
+    font-weight: 700;
+    background: rgba(239,68,68,0.08);
+}
+.link-menu-cancel:hover { background: rgba(239,68,68,0.15); }
