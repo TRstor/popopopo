@@ -40,7 +40,35 @@
         <% } %>
     </style>
 </head>
-<body class="<%= useFullCover ? 'has-fullscreen-cover' : '' %> link-style-icon-card">
+<body class="<%= useFullCover ? 'has-fullscreen-cover' : '' %> link-style-icon-card anim-bg-<%= merchant.animated_bg || 'none' %>" data-anim-opacity="<%= merchant.animated_bg_opacity || '60' %>">
+    <% if (merchant.animated_bg && merchant.animated_bg !== 'none') { %>
+        <% const animOp = ((parseInt(merchant.animated_bg_opacity) || 60) / 100); %>
+        <div class="anim-bg-layer" style="opacity: <%= animOp %>">
+            <% if (merchant.animated_bg === 'custom' && merchant.animated_bg_url) { %>
+                <% if (/\.(mp4|webm)(\?|$)/i.test(merchant.animated_bg_url)) { %>
+                    <video autoplay muted loop playsinline preload="auto" class="anim-bg-video">
+                        <source src="<%= merchant.animated_bg_url %>">
+                    </video>
+                <% } else { %>
+                    <img src="<%= merchant.animated_bg_url %>" alt="" class="anim-bg-video">
+                <% } %>
+            <% } else if (merchant.animated_bg === 'stars') { %>
+                <div class="stars-layer"></div><div class="stars-layer stars-2"></div><div class="stars-layer stars-3"></div>
+            <% } else if (merchant.animated_bg === 'particles') { %>
+                <% for(let i=0;i<20;i++){ %><span class="particle" style="left:<%= Math.random()*100 %>%;animation-delay:<%= Math.random()*10 %>s;animation-duration:<%= 8+Math.random()*10 %>s"></span><% } %>
+            <% } else if (merchant.animated_bg === 'bubbles') { %>
+                <% for(let i=0;i<15;i++){ %><span class="bubble" style="left:<%= Math.random()*100 %>%;width:<%= 20+Math.random()*40 %>px;height:<%= 20+Math.random()*40 %>px;animation-delay:<%= Math.random()*8 %>s;animation-duration:<%= 10+Math.random()*8 %>s"></span><% } %>
+            <% } else if (merchant.animated_bg === 'snow') { %>
+                <% for(let i=0;i<40;i++){ %><span class="snowflake" style="left:<%= Math.random()*100 %>%;animation-delay:<%= Math.random()*10 %>s;animation-duration:<%= 6+Math.random()*8 %>s;opacity:<%= 0.4+Math.random()*0.6 %>">❄</span><% } %>
+            <% } else if (merchant.animated_bg === 'waves') { %>
+                <div class="waves-layer"><div></div><div></div><div></div></div>
+            <% } else if (merchant.animated_bg === 'aurora') { %>
+                <div class="aurora-layer"></div>
+            <% } else if (merchant.animated_bg === 'gradient') { %>
+                <div class="gradient-anim-layer"></div>
+            <% } %>
+        </div>
+    <% } %>
     <% if (typeof isPreview !== 'undefined' && isPreview) { %>
     <div class="preview-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#8B5CF6;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-family:Tajawal,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
         <span><i class="fas fa-eye" style="margin-left:6px"></i> وضع المعاينة — هذا ما يراه الزوار</span>

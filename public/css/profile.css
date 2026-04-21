@@ -1118,3 +1118,193 @@ body {
     background: rgba(239,68,68,0.08);
 }
 .link-menu-cancel:hover { background: rgba(239,68,68,0.15); }
+
+/* ===== Animated Backgrounds ===== */
+.anim-bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.anim-bg-layer + * { position: relative; z-index: 1; }
+.profile-page { position: relative; z-index: 2; }
+
+.anim-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Stars */
+.stars-layer {
+    position: absolute; inset: 0;
+    background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+        radial-gradient(1px 1px at 60% 70%, #fff, transparent),
+        radial-gradient(2px 2px at 80% 20%, #fff, transparent),
+        radial-gradient(1px 1px at 40% 80%, #fff, transparent),
+        radial-gradient(2px 2px at 90% 50%, #fff, transparent),
+        radial-gradient(1px 1px at 10% 60%, #fff, transparent);
+    background-size: 200px 200px;
+    animation: starsMove 60s linear infinite;
+}
+.stars-layer.stars-2 { background-size: 300px 300px; animation-duration: 90s; opacity: 0.7; }
+.stars-layer.stars-3 { background-size: 450px 450px; animation-duration: 120s; opacity: 0.5; }
+@keyframes starsMove {
+    from { transform: translateY(0); }
+    to { transform: translateY(-200px); }
+}
+
+/* Particles (floating up) */
+.particle {
+    position: absolute;
+    bottom: -10px;
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    animation: particleFloat linear infinite;
+    box-shadow: 0 0 6px rgba(255,255,255,0.6);
+}
+@keyframes particleFloat {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-110vh) scale(0.5); opacity: 0; }
+}
+
+/* Bubbles */
+.bubble {
+    position: absolute;
+    bottom: -60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(139,92,246,0.15));
+    border: 1px solid rgba(255,255,255,0.2);
+    animation: bubbleFloat linear infinite;
+}
+@keyframes bubbleFloat {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translate(40px, -110vh); opacity: 0; }
+}
+
+/* Snow */
+.snowflake {
+    position: absolute;
+    top: -20px;
+    color: #fff;
+    font-size: 14px;
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    animation: snowFall linear infinite;
+    user-select: none;
+    pointer-events: none;
+}
+@keyframes snowFall {
+    0% { transform: translateY(0) translateX(0) rotate(0); }
+    100% { transform: translateY(110vh) translateX(30px) rotate(360deg); }
+}
+
+/* Waves */
+.waves-layer {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 220px;
+}
+.waves-layer > div {
+    position: absolute;
+    left: -50%; right: -50%;
+    bottom: 0;
+    height: 180px;
+    background: radial-gradient(ellipse at top, rgba(139,92,246,0.55), transparent 70%);
+    border-radius: 50%;
+    animation: waveMove 8s ease-in-out infinite;
+}
+.waves-layer > div:nth-child(2) {
+    background: radial-gradient(ellipse at top, rgba(236,72,153,0.45), transparent 70%);
+    animation-duration: 11s; animation-delay: -3s;
+}
+.waves-layer > div:nth-child(3) {
+    background: radial-gradient(ellipse at top, rgba(59,130,246,0.4), transparent 70%);
+    animation-duration: 14s; animation-delay: -6s;
+}
+@keyframes waveMove {
+    0%, 100% { transform: translateX(-40px) translateY(0) scale(1); }
+    50% { transform: translateX(40px) translateY(-20px) scale(1.1); }
+}
+
+/* Aurora */
+.aurora-layer {
+    position: absolute;
+    inset: -20%;
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.5), transparent 50%),
+        radial-gradient(ellipse at 80% 40%, rgba(236,72,153,0.4), transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(34,211,238,0.35), transparent 50%),
+        radial-gradient(ellipse at 30% 70%, rgba(168,85,247,0.4), transparent 50%);
+    filter: blur(40px);
+    animation: auroraShift 18s ease-in-out infinite alternate;
+}
+@keyframes auroraShift {
+    0% { transform: translate(0, 0) rotate(0); }
+    50% { transform: translate(5%, -3%) rotate(8deg); }
+    100% { transform: translate(-5%, 3%) rotate(-8deg); }
+}
+
+/* Animated gradient */
+.gradient-anim-layer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #8B5CF6, #EC4899, #3B82F6, #22D3EE, #8B5CF6);
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease infinite;
+}
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== Dashboard: animated bg picker grid ===== */
+.animbg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.animbg-option {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.animbg-option:hover { background: rgba(139,92,246,0.06); }
+.animbg-option.selected { border-color: #8B5CF6; background: rgba(139,92,246,0.08); }
+.animbg-option input { display: none; }
+.animbg-option .animbg-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: #1a1a22;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px;
+    overflow: hidden;
+    position: relative;
+}
+.animbg-option span { font-size: 12px; font-weight: 600; }
+.animbg-option .animbg-stars { background: #0a0a15; background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent), radial-gradient(2px 2px at 50% 80%, #fff, transparent); }
+.animbg-option .animbg-particles { background: linear-gradient(180deg, #1a0b2e, #2a1854); }
+.animbg-option .animbg-waves { background: linear-gradient(180deg, #0a0a15 40%, #8B5CF6); }
+.animbg-option .animbg-aurora { background: linear-gradient(135deg, #8B5CF6, #EC4899, #22D3EE); filter: blur(0); }
+.animbg-option .animbg-bubbles { background: linear-gradient(180deg, #1a0b2e, #0f4c75); }
+.animbg-option .animbg-snow { background: linear-gradient(180deg, #1e3a5f, #0a0a15); }
+.animbg-option .animbg-gradient { background: linear-gradient(135deg, #8B5CF6, #EC4899, #3B82F6, #22D3EE); background-size: 300% 300%; animation: gradientShift 6s ease infinite; }
+.animbg-option .animbg-custom { background: linear-gradient(135deg, #374151, #1f2937); }
+.animbg-option .animbg-none { background: #1a1a22; color: #555; }

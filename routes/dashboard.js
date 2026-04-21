@@ -111,6 +111,40 @@ router.post('/settings', upload.fields([
     }
 });
 
+// ===== Animated background =====
+router.post('/animated-bg', async (req, res) => {
+    try {
+        const csrfToken = req.body._csrf || req.headers['x-csrf-token'];
+        if (!csrfToken || csrfToken !== req.session.csrfToken) {
+            return res.status(403).send('CSRF token invalid');
+        }
+        const { animated_bg, animated_bg_url, animated_bg_opacity } = req.body;
+        const allowed = ['none','stars','particles','waves','aurora','bubbles','snow','gradient','custom'];
+        const anim = allowed.includes(animated_bg) ? animated_bg : 'none';
+        const allowedOpacity = ['30','60','100'];
+        const opacity = allowedOpacity.includes(animated_bg_opacity) ? animated_bg_opacity : '60';
+
+        // Validate URL (only safe schemes, safe extensions)
+        let url = '';
+        if (animated_bg_url && typeof animated_bg_url === 'string') {
+            const trimmed = animated_bg_url.trim();
+            if (/^https?:\/\//i.test(trimmed) && /\.(mp4|webm|gif|webp)(\?|$)/i.test(trimmed) && trimmed.length < 500) {
+                url = trimmed;
+            }
+        }
+
+        await db.updateMerchant(req.session.user.id, {
+            animated_bg: anim,
+            animated_bg_url: url,
+            animated_bg_opacity: opacity
+        });
+        res.redirect('/dashboard?msg=saved#animbg-section');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/dashboard?msg=error');
+    }
+});
+
 router.post('/links/add', async (req, res) => {
     try {
         const { title, url, icon, color, size, description, badge, show_icon, show_text, border_style, gradient, countdown_date, section_id } = req.body;
