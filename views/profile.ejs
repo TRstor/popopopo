@@ -49,8 +49,10 @@
                 <% const storedType = merchant.animated_bg_type; %>
                 <% const isVideo = storedType === 'video' || (!storedType && /\.(mp4|webm|mov)(\?|#|$)/i.test(bgUrl)); %>
                 <% if (isVideo) { %>
-                    <video autoplay muted loop playsinline preload="auto" class="anim-bg-video" onerror="this.style.display='none'">
-                        <source src="<%= bgUrl %>">
+                    <% const isUpload = /^\/uploads\//.test(bgUrl); %>
+                    <% const mime = isUpload ? '' : (/\.webm(\?|#|$)/i.test(bgUrl) ? 'video/webm' : /\.mov(\?|#|$)/i.test(bgUrl) ? 'video/quicktime' : 'video/mp4'); %>
+                    <video autoplay muted loop playsinline preload="auto" class="anim-bg-video" onerror="this.style.display='none'" onloadeddata="this.play().catch(()=>{})">
+                        <source src="<%= bgUrl %>"<% if (mime) { %> type="<%= mime %>"<% } %>>
                     </video>
                 <% } else { %>
                     <img src="<%= bgUrl %>" alt="" class="anim-bg-video" onerror="this.style.display='none'">

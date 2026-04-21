@@ -105,15 +105,36 @@ app.use('/dashboard', dashboardRoutes);
 app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
 
-// Serve images from Firestore
+// Serve images/videos from Firestore (with HTTP Range support for videos)
 app.get('/uploads/:fileId', async (req, res) => {
     try {
         const file = await dbModule.getFile(req.params.fileId);
         if (!file) return res.status(404).end();
-        res.set('Content-Type', file.contentType);
+        const buffer = Buffer.from(file.data, 'base64');
+        const total = buffer.length;
+        const contentType = file.contentType || 'application/octet-stream';
         res.set('Cache-Control', 'public, max-age=31536000');
-        res.send(Buffer.from(file.data, 'base64'));
+        res.set('Accept-Ranges', 'bytes');
+        res.set('Content-Type', contentType);
+
+        const range = req.headers.range;
+        if (range) {
+            const match = /bytes=(\d*)-(\d*)/.exec(range);
+            let start = match && match[1] ? parseInt(match[1], 10) : 0;
+            let end = match && match[2] ? parseInt(match[2], 10) : total - 1;
+            if (isNaN(start) || start < 0) start = 0;
+            if (isNaN(end) || end >= total) end = total - 1;
+            if (start > end) { start = 0; end = total - 1; }
+            res.status(206);
+            res.set('Content-Range', `bytes ${start}-${end}/${total}`);
+            res.set('Content-Length', String(end - start + 1));
+            return res.end(buffer.slice(start, end + 1));
+        }
+
+        res.set('Content-Length', String(total));
+        res.send(buffer);
     } catch (err) {
+        console.error('uploads route error:', err);
         res.status(500).end();
     }
 });
